@@ -2,9 +2,9 @@
 
 
 
-    docker build -t sysnetcz/ruian .
+    docker build -t sysnetcz/ruian-base .
 
-    docker run -it --name ruian -t sysnetcz/ruian /bin/bash
+    docker run -it --name ruian -t sysnetcz/ruian-base /bin/bash
 
 
 ## GDAL-VFR
