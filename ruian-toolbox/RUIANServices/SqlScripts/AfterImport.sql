@@ -1,0 +1,6 @@
+-- ##################################################
+-- Tento SQL skript se spustí po importu dat do databáze
+-- Můžeme využít k vytvoření vlastních pomocných tabulek nebo k vymazání hodnot, které v databázi nechceme.
+-- ##################################################
+-- drop table if exists ahojtemptable;
+-- CREATE TABLE ahojtemptable(gid integer) WITH (OIDS=FALSE);

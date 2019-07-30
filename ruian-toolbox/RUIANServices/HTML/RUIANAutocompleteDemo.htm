@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Našeptávače RÚIAN</title>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+  <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css">
+  <style>
+  .ui-autocomplete-loading {
+    background: white url("http://jqueryui.com/resources/demos/autocomplete/images/ui-anim_basic_16x16.gif") right center no-repeat;
+  }
+  p {
+    	font-size: 100%;
+  }
+  </style>
+  <script>
+
+
+function setInputValue(id, value)
+{
+	streetElement = document.getElementById(id);
+	streetElement.value = value;
+}
+
+function clearInputList(list)
+{
+ for (key in list) {
+     setInputValue(list[key], "");
+ }
+}
+
+$(function() {
+
+    $( "#Street" ).autocomplete({
+      source: "/ruian/jqueryautocomplete.py/street?RUIANType=street",
+      minLength: 2,
+      select: function( event, ui ) {	
+		setInputValue("Town", ui.item.id);
+      }
+    });
+
+
+    $( "#Id" ).autocomplete({
+      source: "/ruian/jqueryautocomplete.py/id?RUIANType=id&",
+      minLength: 1,
+      select: function( event, ui ) {
+	    idElement = document.getElementById("Id");
+		idElement.value = ui.item.id;
+      }
+    });
+
+    $( "#PSC" ).autocomplete({
+      source: "/ruian/jqueryautocomplete.py/zipcode?RUIANType=zip&",
+      minLength: 2,
+      select: function( event, ui ) {
+	    document.getElementById("PSC").value = ui.item.id;
+      }
+    });
+	
+    $( "#TownZIP_Town" ).autocomplete({
+      source: "/ruian/jqueryautocomplete.py/town?RUIANType=town",
+      minLength: 2,
+      select: function( event, ui ) {
+		setInputValue("TownZIP_ZIP", ui.item.id);
+      }
+    });
+
+    $( "#TownZIP_ZIP" ).autocomplete({
+      source: "/ruian/jqueryautocomplete.py/zipcode?RUIANType=zip&",
+      minLength: 2,
+      select: function( event, ui ) {
+		setInputValue("TownZIP_Town", ui.item.id);
+      }
+    });
+	
+});
+  </script>
+</head>
+<body>
+  <h1>Našeptávače RÚIAN</h1>
+ 
+<b>Našeptávače RÚIAN</b> jsou chytré rozšíření Vašeho formuláře pro vkládání poštovních adres a identifikátoru RÚIAN.</p>
+
+<table>
+
+<!-- Adresa -->
+
+<tr>
+<td>
+
+<div class="ui-widget" style="margin: 0px 20px 20px 0px; padding: 10px 10px 15px 10px; border: solid grey 1px;">
+	<table>
+		<tr>
+			<td align="right"><label for="Street">Ulice a číslo </label></td>
+			<td><input id="Street"></td>
+		</tr>
+  
+		<tr>
+			<td align="right"><label for="Town">Obec a PSČ</label></td>
+			<td><input id="Town"></td>
+		</tr>
+
+		<tr>
+			<td align="right"> </td>
+			<td><button type="button" onclick="clearInputList(['Town', 'Street']);">Nové zadání</button></td>
+		</tr>
+	</table>
+</div>
+</td>
+<td valign="top">
+<p>Zajistí pohodlné vložení poštovní adresy pomocí našeptávače.</p>
+<p>Našeptávač adresy zvyšuje komfort práce s poštovními adresami ve formulářích všech druhů aplikací.</p>
+<p>Poskytuje kvalitní adresní data na vstupu Vaší aplikace a zároveň nabízí příjemné uživatelské rozhraní.</p>
+<ul>
+	<li>zajistí platné poštovní adresy ve vašich datech</li>
+	<li>usnadní uživatelům vkládání poštovních adres</li>
+</ul>
+</td>
+</tr>
+
+
+<!-- Identifikátor RÚIAN -->
+<tr>
+	<td valign="top">
+		<div class="ui-widget" style="margin: 0px 20px 20px 0px; padding: 10px 10px 15px 10px; border: solid grey 1px;">
+			<label for="Id">Identifikátor RÚIAN</label>
+			<input id="Id">
+		</div>
+	</td>
+	<td valign="top">
+		<p>Zajistí vložení existujícího identifikátoru RÚIAN.</p>
+	</td>
+</tr>
+
+<!-- PSČ -->
+<tr>
+	<td valign="top">
+		<div class="ui-widget" style="margin: 0px 20px 20px 0px; padding: 10px 10px 15px 10px; border: solid grey 1px;">
+			<label for="PSC">PSČ</label>
+			<input id="PSC">
+		</div>
+	</td>
+	<td valign="top">
+		<p>Zajiští vložení existujícího poštovního směrovacího čísla.</p>
+	</td>
+</tr>
+
+<!-- Obec a PSČ -->
+<tr>
+	<td valign="top">
+		<div class="ui-widget" style="margin: 0px 20px 20px 0px; padding: 10px 10px 15px 10px; border: solid grey 1px;">
+	<table>
+		<tr>
+		<tr>
+			<td align="right"><label for="TownZIP_Town">Obec </label></td>
+			<td><input id="TownZIP_Town"></td>
+		</tr>
+
+		<tr>
+			<td align="right"><label for="TownZIP_ZIP">PSČ </label></td>
+			<td><input id="TownZIP_ZIP"></td>
+		</tr>
+
+		<tr>
+			<td align="right"> </td>
+			<td><button type="button" onclick="clearInputList(['TownZIP_Town', 'TownZIP_ZIP'])">Nové zadání</button></td>
+		</tr>
+		</tr>
+	</table>		
+		</div>
+	</td>
+	<td valign="top">
+		<p>Zajistí vložení správné kombinace názvu obce a poštovního směrovacího čísla.</p>
+	</td>
+</tr>
+
+</table>	
+
+
+</body>
+</html>
+
