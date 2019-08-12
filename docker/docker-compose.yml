@@ -1,0 +1,177 @@
+version: '3'
+
+# Úložiště
+volumes:
+  postgis-data:
+    driver: local
+  backup-data:
+    driver: local
+  ruian-data:
+    driver: local
+  portainer-data:
+    driver: local
+
+
+  log-volume: 
+    driver: local
+  esdata01:
+    driver: local
+  esdata02:
+    driver: local
+  filebeatdata:
+    driver: local
+  portal-data:
+    driver: local
+  migration-data:
+    driver: local
+    
+# Sítě  
+networks:
+  backend:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.88.0.0/16
+         
+# Služby
+services:
+  # PostGIS pracovní database
+  postgis:
+    image: sysnetcz/postgis
+    container_name: postgis
+    hostname: postgis
+    domainname: ruian.docker
+    expose: 
+      - 5432
+    ports:
+      - 5432:5432
+    volumes:
+      - postgis-data::/var/lib/postgresql
+      - backup-data:/backups
+      - ${PWD}/data/postgis/logs:/var/log
+    networks:
+      backend:
+        ipv4_address: 10.88.0.20
+        aliases: 
+          - postgis
+          - postgres
+          - db
+    environment: 
+      - "POSTGRES_DB=${POSTGRES_DB}"
+      - "POSTGRES_USER=${POSTGRES_USER}"
+      - "POSTGRES_PASS=${POSTGRES_PASS}"
+      - "ALLOW_IP_RANGE=${ALLOW_IP_RANGE}"
+      - "POTSGRES_MULTIPLE_EXTENSIONS=${POTSGRES_MULTIPLE_EXTENSIONS}"
+    restart: unless-stopped
+    healthcheck:
+      test: "exit 0"
+  
+  # RUIAN Importer
+  importer:
+    build: ./importer
+    container_name: importer
+    hostname: importer
+    domainname: ruian.docker
+    volumes:
+      - ruian-data:${RUIAN_DATA_DIR}
+      - ${PWD}/data/conf/toolbox/DownloadRUIAN.cfg:/opt/ruian/toolbox/DownloadRUIAN.cfg
+      - ${PWD}/data/conf/toolbox/ImportRUIAN.cfg:/opt/ruian/toolbox/ImportRUIAN.cfg
+      - ${PWD}/data/conf/toolbox/RUIANServices.cfg:/opt/ruian/toolbox/RUIANServices.cfg
+      - ${PWD}/data/importer/logs:${RUIAN_LOG}
+    networks:
+      backend:
+        ipv4_address: 10.88.0.30
+        aliases: 
+          - importer
+          - ruian-importer
+    environment: 
+      - RUIAN_TOOLBOX_HOME=${RUIAN_TOOLBOX_HOME}
+      - RUIAN_DOWNLOAD_HOME=${RUIAN_DOWNLOAD_HOME}
+      - RUIAN_IMPORT_HOME=${RUIAN_IMPORT_HOME}
+      - RUIAN_DATA_DIR=${RUIAN_DATA_DIR}
+      - RUIAN_LOG=${RUIAN_LOG}
+      - RUIAN_VFR_FILES=${RUIAN_VFR_FILES}
+    restart: unless-stopped
+    depends_on:
+      - postgis
+
+  # RUIAN Service
+  rest:
+    build: ./services
+    container_name: rest
+    hostname: rest
+    domainname: ruian.docker
+    ports:
+      - 8080:80
+    volumes:
+      - ${PWD}/data/conf/toolbox/DownloadRUIAN.cfg:/opt/ruian/toolbox/DownloadRUIAN.cfg
+      - ${PWD}/data/conf/toolbox/ImportRUIAN.cfg:/opt/ruian/toolbox/ImportRUIAN.cfg
+      - ${PWD}/data/conf/toolbox/RUIANServices.cfg:/opt/ruian/toolbox/RUIANServices.cfg
+      - ${PWD}/data/service/logs:${RUIAN_LOG}
+    networks:
+      backend:
+        ipv4_address: 10.88.0.31
+        aliases: 
+          - rest
+          - ruian-service
+    environment: 
+      - RUIAN_TOOLBOX_HOME=${RUIAN_TOOLBOX_HOME}
+      - RUIAN_DOWNLOAD_HOME=${RUIAN_DOWNLOAD_HOME}
+      - RUIAN_IMPORT_HOME=${RUIAN_IMPORT_HOME}
+      - RUIAN_DATA_DIR=${RUIAN_DATA_DIR}
+      - RUIAN_LOG=${RUIAN_LOG}
+      - RUIAN_VFR_FILES=${RUIAN_VFR_FILES}
+    restart: unless-stopped
+    depends_on:
+      - postgis
+
+  # Portainer container
+  portainer:
+    image: portainer/portainer:latest
+    container_name: portainer
+    hostname: portainer
+    domainname: sekm.docker
+    user: root #To read the docker socket
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock
+    networks:
+      backend:
+        ipv4_address: 10.66.0.40
+        aliases: 
+          - portainer
+          - portainet-app
+  
+  # RUIAN WEB - reverzní proxy
+  web:
+    image: nginx:latest
+    container_name: web
+    hostname: web
+    domainname: ruian.docker
+    networks:
+      backend:
+        ipv4_address: 10.88.0.80
+        aliases: 
+          - web
+          - nginx-ruian
+          - nginx
+    ports: 
+      - 80:80
+      - 443:443
+    volumes:
+      - ${PWD}/data/conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ${PWD}/data/conf/nginx/.htpasswd:/etc/nginx/.htpasswd
+      - ${PWD}/data/conf/nginx/sites:/etc/nginx/sites
+      - ${PWD}/data/conf/nginx/ssl:/etc/nginx/ssl
+      - ${PWD}/data/conf/nginx/html:/usr/share/nginx/html
+      - ${PWD}/data/logs/nginx:/var/log/nginx    
+    restart: unless-stopped
+    depends_on:
+      - rest
+      - portainer
+     healthcheck:
+      test: "exit 0"      

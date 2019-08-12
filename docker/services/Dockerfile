@@ -41,7 +41,8 @@ ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
 RUN mkdir -p ${RUIAN_LOG}
 RUN mkdir -p ${RUIAN_VFR_FILES}
 
-ADD apache-config.conf /etc/apache2/sites-enabled/000-default.conf
+COPY apache2.conf /etc/apache2/apache2.conf
+COPY apache-config.conf /etc/apache2/sites-enabled/000-default.conf
 
 # Run the command on container startup
 CMD /usr/sbin/apache2ctl -D FOREGROUND
