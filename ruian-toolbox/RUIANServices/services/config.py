@@ -14,14 +14,14 @@ shared.setupPaths(depth=2)
 from sharedtools.config import Config, RUIANImporterConfig
 
 servicesConfigAttrs = {
-                "serverHTTP": 'www.vugtk.cz',
+                "serverHTTP": 'ruian.sysnet.cz',
                 "portNumber": 80,
-                "servicesWebPath": "euradin/services/rest.py/",
-                "databaseHost": "192.168.1.93",
+                "servicesWebPath": "ruian/services/rest.py/",
+                "databaseHost": "postgis",
                 "databasePort": "5432",
-                "databaseName": "euradin",
-                "databaseUserName": "postgres",
-                "databasePassword": "postgres",
+                "databaseName": "ruian",
+                "databaseUserName": "docker",
+                "databasePassword": "docker",
                 "noCGIAppServerHTTP": "localhost",
                 "noCGIAppPortNumber": 5689,
                 "issueNumber": "",

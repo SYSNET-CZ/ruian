@@ -1,6 +1,6 @@
 # Tento sniplet lze použít pro vystavení adresáře services jako CGI pro Apache HTTP.
 
-ScriptAlias /ruian/ "C:/Users/raugustyn/Desktop/RUIANToolbox/RUIANServices/services/"
+ScriptAlias /ruian/ "/opt/ruian/toolbox/RUIANServices/services/"
 <Location "/ruian">
     Options None
     Order allow,deny
