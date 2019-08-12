@@ -30,21 +30,20 @@ ENV LANG=cs_CZ.UTF-8 \
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update \
-  && apt-get install -y python3-pip python3-dev gettext \
+  && apt-get install -y python-pip python-dev gettext \
   && cd /usr/local/bin \
-  && ln -s /usr/bin/python3 python \
-  && pip3 install --upgrade pip
+  && pip install --upgrade pip
 
 RUN apt-get install -y software-properties-common 
 RUN add-apt-repository ppa:ubuntugis/ppa && apt-get update
 RUN apt-get install -y gdal-bin binutils libproj-dev 
 RUN apt-get install -y libgdal-dev
-RUN apt-get install -y libpq-dev postgresql-client python3-psycopg2
+RUN apt-get install -y libpq-dev postgresql-client python-psycopg2
 
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal \
     C_INCLUDE_PATH=/usr/include/gdal
 
-RUN apt-get install -y python3-numpy && apt-get install -y python3-gdal
+RUN apt-get install -y python-numpy && apt-get install -y python-gdal
 
 
 WORKDIR /opt/ruian
