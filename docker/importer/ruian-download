@@ -1,0 +1,2 @@
+0 2 * * 0 /opt/ruian/toolbox/DownloadRUIAN.sh > /opt/ruian/sharedtools/DownloadedData/logs/cron-download.log
+0 7 * * 0 /opt/ruian/toolbox/ImportRUIAN.sh > /opt/ruian/sharedtools/DownloadedData/logs/cron-inport.log
