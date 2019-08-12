@@ -28,10 +28,6 @@ def boolToStr(v):
         return "false"
 
 
-def strToBool(v):
-    return v.lower() in ("yes", "true", "t", "1")
-
-
 def strTo127(s):
     result = ""
     for index in range(len(s)):
@@ -248,12 +244,12 @@ def RUIANDownloadConfig():
     global x_RUIANDownloadConfig
 
     if x_RUIANDownloadConfig == None:
-        x_RUIANDownloadConfig = Config("DownloadRUIAN.cfg"),
+        x_RUIANDownloadConfig = Config("DownloadRUIAN.cfg",
             {
                 "downloadFullDatabase" : False,
                 "uncompressDownloadedFiles" : False,
                 "runImporter" : False,
-                "dataDir" : os.path.join("..", "DownloadedData"),
+                "dataDir" : "..\\DownloadedData\\",
                 "downloadURLs" : "http://vdp.cuzk.cz/vdp/ruian/vymennyformat/vyhledej?vf.pu=S&_vf.pu=on&_vf.pu=on&vf.cr=" + \
                                  "U&vf.up=ST&vf.ds=K&vf.vu=Z&_vf.vu=on&_vf.vu=on&vf.vu=H&_vf.vu=on&_vf.vu=on&search=Vyhledat;" + \
                                  "http://vdp.cuzk.cz/vdp/ruian/vymennyformat/vyhledej?vf.pu=S&_vf.pu=on&_vf.pu=on&vf.cr=U&" +\
@@ -282,17 +278,17 @@ def RUIANImporterConfig():
     if x_RUIANImporterConfig == None:
         x_RUIANImporterConfig = Config("ImportRUIAN.cfg",
             {
-                "dbname" : "ruian",
-                "host" : "postgis",
+                "dbname" : "euradin",
+                "host" : "localhost",
                 "port" : "5432",
-                "user" : "docker",
-                "password" : "docker",
+                "user" : "postgres",
+                "password" : "postgres",
                 "schemaName" : "",
                 "layers" : "AdresniMista,Ulice,StavebniObjekty,CastiObci,Obce,Mop,Momc",
-                "WINDOWS_os4GeoPath" : os.path.join("..","..","OSGeo4W_vfr","OSGeo4W.bat"),
-                "LINUX_vfr2pgPath": "/opt/ruian/vfr",
+                "WINDOWS_os4GeoPath" : "..\\..\\OSGeo4W_vfr\\OSGeo4W.bat",
+                "LINUX_vfr2pgPath": "/home/docker/gdal-vfr/",
                 "buildServicesTables" : "True",
-                "buildAutocompleteTables" : "True"
+                "buildAutocompleteTables" : "False"
             },
             convertRUIANImporterConfig,
             defSubDir = "importer",
@@ -312,27 +308,27 @@ def getRUIANToolboxPath():
 
 
 def getRUIANImporterPath():
-    return os.path.join(getRUIANToolboxPath(),"importer") + os.sep
+    return getRUIANToolboxPath() + "importer" + os.sep
 
 
 def getRUIANDownloaderPath():
-    return os.path.join(getRUIANToolboxPath(),"downloader") + os.sep
+    return getRUIANToolboxPath() + "downloader" + os.sep
 
 
 def getRUIANServicesBasePath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices") + os.sep
+    return getRUIANToolboxPath() + "RUIANServices" + os.sep
 
 
 def getRUIANServicesPath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices","services") + os.sep
+    return getRUIANToolboxPath() + "RUIANServices" + os.sep + "services" + os.sep
 
 
 def getRUIANServicesHTMLPath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices","HTML") + os.sep
+    return getRUIANToolboxPath() + "RUIANServices" + os.sep + "HTML" + os.sep
 
 
 def getRUIANServicesSQLScriptsPath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices","SqlScripts") + os.sep
+    return getRUIANToolboxPath() + "RUIANServices" + os.sep + "SqlScripts" + os.sep
 
 
 def getDataDirFullPath():
