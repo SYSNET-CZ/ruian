@@ -173,5 +173,5 @@ services:
     depends_on:
       - rest
       - portainer
-     healthcheck:
-      test: "exit 0"      
+    healthcheck:
+      test: "exit 0"
