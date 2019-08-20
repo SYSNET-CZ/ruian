@@ -1,7 +1,6 @@
 # Docker obraz pro aplikaci importu VFR dat z RUIAN a ulozeni do PostGIS gatabaze.
 #
-# Postavit pomoci prikazu: 
-#       docker build -t sysnetcz/ruian-import .
+# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/importer/Dockerfile -t sysnetcz/ruian-import .
 #
 # Do externiho volume:
 #       -   /opt/ruian/toolbox/sharedtools/DownloadedData
@@ -14,7 +13,8 @@
 #
 
 FROM sysnetcz/ruian-base:latest
-MAINTAINER SYSNET s.r.o. "info@sysnet.cz"
+LABEL maintainer="SYSNET s.r.o. <info@sysnet.cz>"
+LABEL version="1.0.0"
 
 ENV RUIAN_TOOLBOX_HOME /opt/ruian/toolbox/downloader
 ENV RUIAN_DOWNLOAD_HOME /opt/ruian/toolbox/downloader
@@ -25,12 +25,12 @@ ENV RUIAN_VFR_FILES=${RUIAN_DATA_DIR}/data
 
 RUN apt-get update && apt-get install -y cron bash wget
 
-COPY ../../ruian-toolbox ./toolbox
+COPY ${PWD}/ruian-toolbox ./toolbox
 ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
 
 RUN mkdir -p ${RUIAN_LOG}
 RUN mkdir -p ${RUIAN_VFR_FILES}
-COPY ruian-download /etc/cron.d/ruian-download
+COPY ${PWD}/docker/importer/ruian-download /etc/cron.d/ruian-download
 RUN chmod 0644 /etc/cron.d/ruian-download
 RUN crontab /etc/cron.d/ruian-download
 RUN touch ${RUIAN_LOG}/cron.log

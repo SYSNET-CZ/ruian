@@ -8,7 +8,9 @@ Obraz vychází ze základního obrazu pro GIS aplikace **sysnetcz/ruian-base:la
 
 Obraz se vytvoří příkazem
 
-        # docker build -t sysnetcz/ruian-import .
+        # cd ..
+        # cd ..
+        # docker build -f ${PWD}/docker/importer/Dockerfile -t sysnetcz/ruian-import .
 
 ## Ruční spuštění kontejneru
 

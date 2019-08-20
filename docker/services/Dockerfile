@@ -1,7 +1,6 @@
 # Docker obraz pro aplikaci webových sluzeb nad geodatabazi RUIAN ulozenou v postgis.
 #
-# Postavit pomoci prikazu: 
-#       docker build -t sysnetcz/ruian-service .
+# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/services/Dockerfile -t sysnetcz/ruian-service .
 #
 # Do externiho volume:
 #       -   /opt/ruian/toolbox/sharedtools/DownloadedData
@@ -35,14 +34,14 @@ ENV APACHE_LOG_DIR /var/log/apache2
 ENV APACHE_LOCK_DIR /var/lock/apache2
 ENV APACHE_PID_FILE /var/run/apache2.pid
 
-COPY ../../ruian-toolbox ./toolbox
+COPY ${PWD}/ruian-toolbox ./toolbox
 ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
 
 RUN mkdir -p ${RUIAN_LOG}
 RUN mkdir -p ${RUIAN_VFR_FILES}
 
-COPY apache2.conf /etc/apache2/apache2.conf
-COPY apache-config.conf /etc/apache2/sites-enabled/000-default.conf
+COPY ${PWD}/docker/services/apache2.conf /etc/apache2/apache2.conf
+COPY ${PWD}/docker/services/apache-config.conf /etc/apache2/sites-enabled/000-default.conf
 
 # Run the command on container startup
 CMD /usr/sbin/apache2ctl -D FOREGROUND

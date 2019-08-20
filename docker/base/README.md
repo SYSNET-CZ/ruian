@@ -6,7 +6,9 @@ Zakladni obraz pro GIS aplikace. Obsahuje kompletní podproru GDAL a VFR (Výmě
 
 Obraz se vytvoří příkazem
 
-        $ docker build -t sysnetcz/ruian-base .
+        $ cd ..
+        $ cd ..
+        $ docker build --no-cache -f $PWD/docker/base/Dockerfile -t sysnetcz/ruian-base .
 
 ## Ruční spuštění kontejneru
 
