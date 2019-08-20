@@ -248,7 +248,7 @@ def RUIANDownloadConfig():
     global x_RUIANDownloadConfig
 
     if x_RUIANDownloadConfig == None:
-        x_RUIANDownloadConfig = Config("DownloadRUIAN.cfg"),
+        x_RUIANDownloadConfig = Config("DownloadRUIAN.cfg",
             {
                 "downloadFullDatabase" : False,
                 "uncompressDownloadedFiles" : False,
