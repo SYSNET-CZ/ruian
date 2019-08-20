@@ -1,14 +1,15 @@
 # Zakladni GDAL-VFR Docker obraz pro dalsi pouziti. Vhodne pro import dat z RUIAN, sluzby nad importovanymi daty,
 # GeoDjango aplikace a dalsi GIS aplikace.
 #
-# Postavit pomoci prikazu: docker build -t sysnetcz/ruian-base .
+# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/base/Dockerfile -t sysnetcz/ruian-base .
 #
 
 FROM ubuntu:bionic
 
 # http://freegis.fsv.cvut.cz/gwiki/RUIAN_/_GDAL
 
-MAINTAINER SYSNET s.r.o. "info@sysnet.cz"
+LABEL maintainer="SYSNET s.r.o. <info@sysnet.cz>"
+LABEL version="1.0.0"
 
 RUN  export DEBIAN_FRONTEND=noninteractive
 ENV  DEBIAN_FRONTEND noninteractive
@@ -52,8 +53,8 @@ ENV CPLUS_INCLUDE_PATH=/usr/include/gdal \
 RUN apt-get install -y python-numpy && apt-get install -y python-gdal
 
 WORKDIR /opt/ruian
-COPY ../../gdal-vfr ./vfr
-#COPY ../../ruian-toolbox ./toolbox
+COPY gdal-vfr ./vfr
+#COPY ruian-toolbox ./toolbox
 #ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
 ENV PATH="/opt/ruian/vfr:${PATH}"
 
