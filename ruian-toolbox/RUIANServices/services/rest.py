@@ -19,7 +19,7 @@ import codecs
 from HTTPShared import *
 
 import addresswebservices
-import web
+import web      # pip install lpthw.web
 import RUIANConnection
 
 from config import SERVICES_WEB_PATH
@@ -236,7 +236,6 @@ if __name__ == "__main__":
                     sys.stdout.write(response.htmlData)
                     sys.stdout.flush()
                     msvcrt.setmode(sys.stdout.fileno(), os.O_TEXT)
-
 
         else:
             print "ProcessRequest not handled"
