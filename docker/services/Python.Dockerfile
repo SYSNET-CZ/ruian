@@ -27,7 +27,7 @@ ENV RUIAN_VFR_FILES=${RUIAN_DATA_DIR}/data
 EXPOSE 80
 EXPOSE 5689
 
-COPY ../../ruian-toolbox ./toolbox
+COPY ${PWD}/ruian-toolbox ./toolbox
 ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
 
 RUN mkdir -p ${RUIAN_LOG}
