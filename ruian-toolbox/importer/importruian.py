@@ -319,9 +319,10 @@ def processDownloadedDirectory(path):
         if file.endswith(".txt"):
             if file.startswith("Download_") and not file.endswith(LIST_FILE_TAIL):
                 stateFileList = join(path, file)
+                log.logger.info("Download: " + join(path,file))
             elif file.startswith("Patch_"):
                 updatesFileList.append(join(path, file))
-
+                log.logger.info("Patch: " + join(path,file))
     result = False
     if stateFileList != "":
         createStateDatabase(path, stateFileList)

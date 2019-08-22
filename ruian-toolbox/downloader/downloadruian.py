@@ -324,7 +324,8 @@ class RUIANDownloader:
         if os.path.exists(file_name):
             log.logger.info("File " + extractFileName(file_name) + " is already downloaded, skipping it.")
             fileSize = os.stat(file_name).st_size
-            print(".")
+            sys.stdout.write('.')
+
         else:
             req = urllib2.urlopen(url)
             meta = req.info()
@@ -345,7 +346,7 @@ class RUIANDownloader:
                     #self.buildIndexHTML()
             fp.close()
             os.rename(tmpFileName, file_name)
-            print("x")
+            sys.stdout.write('x')
 
         self.downloadInfo.downloadTime = formatTimeDelta(str(datetime.datetime.now() - startTime)[5:])
         self.downloadInfo.fileName = file_name
@@ -417,7 +418,8 @@ class RUIANDownloader:
                 infoFile.fullDownloadBroken = True
                 infoFile.save()
 
-            safeMkDir(config.dataDir)
+            safeMkDir(os.path.join(config.dataDir, "data"))
+            safeMkDir(os.path.join(config.dataDir, "logs"))
 
             l = self.getFullSetList()
             d = datetime.date.today()
