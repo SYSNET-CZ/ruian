@@ -9,9 +9,9 @@ Reverzní proxy zpřístupní pouze ty služby, které jsou určeny pro přístu
         # mkdir -p data/logs
         # cp ../contrib/conf/nginx/nginx.conf data/conf/nginx.conf
         # cp ../contrib/conf/nginx/.htpasswd data/conf/.htpasswd
-        # cp ../contrib/conf/nginx/sites data/conf/sites
-        # cp ../contrib/conf/nginx/ssl data/conf/ssl
-        # cp ../contrib/conf/nginx/html data/html
+        # cp -R ../contrib/conf/nginx/sites data/conf/sites
+        # cp -R ../contrib/conf/nginx/ssl data/conf/ssl
+        # cp -R ../contrib/conf/nginx/html data/html
    
         # docker run -d \
             --name nginx \
