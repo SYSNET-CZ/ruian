@@ -22,7 +22,7 @@ servicesConfigAttrs = {
                 "databaseName": "ruian",
                 "databaseUserName": "docker",
                 "databasePassword": "docker",
-                "noCGIAppServerHTTP": "localhost",
+                "noCGIAppServerHTTP": "0.0.0.0",
                 "noCGIAppPortNumber": 5689,
                 "issueNumber": "",
                 "issueShortDescription": "",
