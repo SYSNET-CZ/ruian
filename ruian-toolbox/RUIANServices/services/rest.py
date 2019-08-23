@@ -13,13 +13,13 @@
 import re
 import os
 import shared as sharedModule
-import urllib
+#import urllib
 import codecs
 
 from HTTPShared import *
 
 import addresswebservices
-import web      # pip install lpthw.web
+import web      # pip install web.py http://webpy.org/
 import RUIANConnection
 
 from config import SERVICES_WEB_PATH
@@ -39,7 +39,6 @@ def getTestingPath():
     paths = os.path.dirname(__file__).split("/")
     paths = paths[:len(paths) - 1]
     return "/".join(paths) + "/testing/"
-    return
 
 DATABASE_DETAILS_PATH = "/dbdetails"
 AUTOCOMPLETES_PATH = '/autocomplete'
@@ -184,6 +183,7 @@ if __name__ == "__main__":
     import os
     if os.environ.has_key('SERVER_SOFTWARE'):
         # Script spuštěn jako CGI
+        print("HTTP Server CGI mode")
         import cgi
         import cgitb
         cgitb.enable()
@@ -198,9 +198,9 @@ if __name__ == "__main__":
 
         form = cgi.FieldStorage()
         if os.environ.has_key('PATH_INFO'):
-	        pathInfo = os.environ['PATH_INFO']
+            pathInfo = os.environ['PATH_INFO']
         else:
-	        pathInfo = ""
+            pathInfo = ""
         if pathInfo[:1] == "/":
             pathInfo = pathInfo[1:]
 
@@ -242,6 +242,7 @@ if __name__ == "__main__":
 
     else:
         # Script je spuštěn jako samostatný server
+        print("HTTP Server standalone mode")
         config.serverHTTP = config.noCGIAppServerHTTP
         SERVER_HTTP = config.noCGIAppServerHTTP
         #SERVICES_WEB_PATH = ""
