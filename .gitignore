@@ -8,7 +8,6 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
-venv/
 bin/
 build/
 develop-eggs/
@@ -61,3 +60,4 @@ docs/_build/
 data*
 ruian_test.db
 nohup.out
+/venv/
