@@ -291,6 +291,7 @@ def RUIANImporterConfig():
                 "layers" : "AdresniMista,Ulice,StavebniObjekty,CastiObci,Obce,Mop,Momc",
                 "WINDOWS_os4GeoPath" : os.path.join("..","..","OSGeo4W_vfr","OSGeo4W.bat"),
                 "LINUX_vfr2pgPath": "/opt/ruian/vfr",
+                "GDAL_VFR_PATH": "/opt/ruian/vfr/",
                 "buildServicesTables" : "True",
                 "buildAutocompleteTables" : "True"
             },

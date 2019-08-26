@@ -60,6 +60,8 @@ def createCommandFile(fileNameBase, commands):
     :param commands: Context of the command file.
     :return:
     """
+    print("createCommandFile - START") 
+
     assert isinstance(fileNameBase, basestring)
     assert isinstance(commands, basestring)
 
@@ -71,7 +73,7 @@ def createCommandFile(fileNameBase, commands):
     if RUNS_ON_LINUX:os.chmod(fileName, 0o777)
 
     file.close()
-
+    print("createCommandFile - END") 
     return fileName
 
 
@@ -102,15 +104,18 @@ def joinPaths(basePath, relativePath):
 
 
 def getOSGeoPath():
-    if RUNS_ON_WINDOWS:
-        path = config.WINDOWS_os4GeoPath
-    else:
-        path = config.LINUX_vfr2pgPath
-
-    return joinPaths(os.path.dirname(__file__), path)
+#    if RUNS_ON_WINDOWS:
+#        path = config.WINDOWS_os4GeoPath
+#    else:
+#        path = config.LINUX_vfr2pgPath
+#
+#    return joinPaths(os.path.dirname(__file__), path)
+    path = config.GDAL_VFR_PATH
+    return path
 
 
 def convertFileToDownloadLists(HTTPListName):
+    print("convertFileToDownloadLists - START") 
     assert isinstance(HTTPListName, basestring)
 
     result = []
@@ -131,10 +136,14 @@ def convertFileToDownloadLists(HTTPListName):
         outFile.close()
     finally:
         inFile.close()
+
+    print("convertFileToDownloadLists - END") 
     return result
 
 
 def buildDownloadBatch(fileListFileName, fileNames):
+    print("buildDownloadBatch - START") 
+
     assert isinstance(fileListFileName, basestring)
     assert os.path.exists(fileListFileName)
     assert isinstance(fileNames, list)
@@ -162,6 +171,7 @@ def buildDownloadBatch(fileListFileName, fileNames):
 
         commandFileName = createCommandFile(path + os.sep + "Import", commands)
 
+    print("buildDownloadBatch - END") 
     return (commandFileName, VFRlogFileName, VFRerrFileName)
 
 
@@ -200,8 +210,9 @@ def createStateDatabase(path, fileListFileName):
     renameFile(fileListFileName, "__")
 
 
-def extractDatesAndType(patchFileList):
-    assert isinstance(patchFileList, list)
+def extractDatesAndType(patchFileName):
+    assert isinstance(patchFileName, basestring)
+    print("extractDatesAndType - START (" + patchFileName + ")") 
 
     def getDate(line):
         result = line[line.rfind("/") + 1:]
@@ -217,7 +228,7 @@ def extractDatesAndType(patchFileList):
     endDate = ""
     type = ""
 
-    inFile = open(patchFileList, "r")
+    inFile = open(patchFileName, "r")
     firstLine = True
     for line in inFile:
         if firstLine:
@@ -228,6 +239,7 @@ def extractDatesAndType(patchFileList):
             startDate = getDate(line)
     inFile.close()
 
+    print("extractDatesAndType - END") 
     return (startDate, endDate, type)
 
 
@@ -246,12 +258,14 @@ def renameFile(fileName, prefix):
     return newFileName
 
 
-def updateDatabase(updateFileList):
-    assert isinstance(updateFileList, list)
+def updateDatabase(updateFileName):
+    #assert isinstance(updateFileList, list)
+    assert isinstance(updateFileName, basestring)
+    print("updateDatabase - START (" + updateFileName + ")") 
 
     def removeDataFiles():
-        dataPath = pathWithLastSlash(os.path.split(updateFileList)[0])
-        inFile = open(updateFileList, "r")
+        dataPath = pathWithLastSlash(os.path.split(updateFileName)[0])
+        inFile = open(updateFileName, "r")
         try:
             for line in inFile:
                 fileName = os.path.basename(line)
@@ -261,21 +275,16 @@ def updateDatabase(updateFileList):
             inFile.close()
         pass
 
-    log.logger.info("Importing update data from " + updateFileList)
+    log.logger.info("Importing update data from " + updateFileName)
 
-    (startDate, endDate, type) = extractDatesAndType(updateFileList)
+    (startDate, endDate, type) = extractDatesAndType(updateFileName)
     log.logger.info("\tPočáteční datum:" + startDate)
     log.logger.info("\tKonečné datum:" + endDate)
     log.logger.info("\tTyp dat:" + type)
 
-    os4GeoPath = joinPaths(os.path.dirname(__file__), config.os4GeoPath)
-    if sys.platform.lower().startswith('win'):
-        os4GeoPath = os4GeoPath + " "
-    #os4GeoPath = os4GeoPath + "vfr2pg"
-    os4GeoPath = "/home/docker/gdel-vfr/vfr2pg"
+    os4GeoPath = os.path.join(getOSGeoPath(),"vfr2pg")
 
-
-    (VFRlogFileName, VFRerrFileName) = buildhtmllog.getLogFileNames(updateFileList)
+    (VFRlogFileName, VFRerrFileName) = buildhtmllog.getLogFileNames(updateFileName)
 
     params = ' '.join([os4GeoPath,
                 "--host", config.host,
@@ -293,19 +302,21 @@ def updateDatabase(updateFileList):
     else:
         params += " 2>%s 3>%s" % (VFRlogFileName, VFRerrFileName)
 
-    commands = "cd " + os.path.dirname(os.path.abspath(updateFileList)) + "\n"
+    commands = "cd " + os.path.dirname(os.path.abspath(updateFileName)) + "\n"
     commands += params + "\n"
-    batchFileName = createCommandFile(os.path.dirname(os.path.abspath(updateFileList)) + os.sep + "Import" , commands)
+    batchFileName = createCommandFile(os.path.dirname(os.path.abspath(updateFileName)) + os.sep + "Import" , commands)
 
     call(batchFileName)
     os.remove(batchFileName)
     removeDataFiles()
 
-    renameFile(updateFileList, "__")
+    renameFile(updateFileName, "__")
     log.logger.info("Import update data done.")
+    print("updateDatabase - END") 
 
 
 def processDownloadedDirectory(path):
+    print("processDownloadedDirectory - START") 
     assert isinstance(path, basestring)
 
     log.logger.info("Načítám stažené soubory do databáze...")
@@ -336,11 +347,13 @@ def processDownloadedDirectory(path):
         result = True
         for updateFileName in updatesFileList:
             updateDatabase(updateFileName)
+            sys.stdout.write("u")
 
     log.logger.info(u"Generuji sestavu importů.")
     buildhtmllog.buildHTMLLog()
 
     log.logger.info("Načítání stažených souborů do databáze - hotovo.")
+    print("processDownloadedDirectory - END") 
     return result
 
 
@@ -355,7 +368,8 @@ def getFullPath(configFileName, path):
 
 def doImport(argv):
     global config
-    
+
+    print("doImport - START") 
     from sharedtools import setupUTF
     setupUTF()
 
@@ -366,24 +380,30 @@ def doImport(argv):
 
     osGeoPath = getOSGeoPath()
     if not os.path.exists(osGeoPath):
-        print "Error: RUIAN import library %s doesn't exist" % osGeoPath
-        print "Download file %s, expand it into RUIANToolbox base directory and run script again." % RUIAN2PG_LIBRARY_ZIP_URL
-
+        print("Error: RUIAN import library %s doesn't exist" % osGeoPath)
+        print("Download file %s, expand it into RUIANToolbox base directory and run script again." % RUIAN2PG_LIBRARY_ZIP_URL)
         sys.exit()
 
     #rebuildAuxiliaryTables = processDownloadedDirectory(os.path.join(getDataDirFullPath(),"data"))
     rebuildAuxiliaryTables = processDownloadedDirectory(getDataDirFullPath())
 
-
     if config.buildServicesTables and rebuildAuxiliaryTables:
         from RUIANServices.services.auxiliarytables import buildAll, buildServicesTables
         if config.buildAutocompleteTables:
+            print("doImport buildAll - START") 
             buildAll()
+            print("doImport buildAll - END") 
         else:
+            print("doImport buildServicesTables - START") 
             buildServicesTables()
+            print("doImport buildServicesTables - END") 
 
     from RUIANServices.services.RUIANConnection import saveRUIANVersionDateToday
+    print("call saveRUIANVersionDateToday() - START") 
     saveRUIANVersionDateToday()
+    print("call saveRUIANVersionDateToday() - END") 
+    print("doImport - END") 
+
 
 
 if __name__ == "__main__":

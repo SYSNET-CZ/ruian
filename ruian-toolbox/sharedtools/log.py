@@ -24,27 +24,32 @@ def createLogger(logFileName):
     global logger
 
     # create logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    if logger is None:
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.INFO)
 
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s %(message)s', datefmt="%H:%M:%S")
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s %(message)s', datefmt="%H:%M:%S")
 
-    # Create and setup console log parameters
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    ch.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s %(message)s', "%H:%M:%S"))
-    logger.addHandler(ch)
+        # Create and setup console log parameters
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s %(message)s', "%H:%M:%S"))
+        logger.addHandler(ch)
 
-    # Create and setup log file parameters
-    createDirForFile(logFileName)
-    fileHandler = logging.FileHandler(logFileName)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    fileHandler.setFormatter(formatter)
-    logger.addHandler(fileHandler)
+        # Create and setup log file parameters
+        createDirForFile(logFileName)
+        fileHandler = logging.FileHandler(logFileName)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        fileHandler.setFormatter(formatter)
+        logger.addHandler(fileHandler)
+        print("\nLogger created")
+    else:
+        print("\nLogger already exists")
 
 
 if __name__ == '__main__':
     logger.info("Logger test info")
+
     logger.debug("Logger test debug")
     logger.error("Logger test error")
     logger.critical("Logger test critical")
