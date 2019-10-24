@@ -61,3 +61,5 @@ data*
 ruian_test.db
 nohup.out
 /venv/
+/data/
+/.idea/
