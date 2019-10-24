@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__author__ = 'Augustyn'
+__author__ = 'SYSNET'
 
 import psycopg2
 from RUIANConnection import *
