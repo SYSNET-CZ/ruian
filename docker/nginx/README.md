@@ -15,7 +15,7 @@ Reverzní proxy zpřístupní pouze ty služby, které jsou určeny pro přístu
    
         # docker run -d \
             --name nginx \
-            -p 80:80 443:443 \
+            -p 80:80 -p 443:443 \
             -v ${PWD}/data/conf/nginx.conf:/etc/nginx/nginx.conf \
             -v ${PWD}/data/conf/.htpasswd:/etc/nginx/.htpasswd \
             -v ${PWD}/data/conf/sites:/etc/nginx/sites \

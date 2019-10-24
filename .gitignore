@@ -60,6 +60,7 @@ docs/_build/
 data*
 ruian_test.db
 nohup.out
+/.idea/
 /venv/
 /data/
 /.idea/
