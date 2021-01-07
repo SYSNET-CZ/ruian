@@ -78,4 +78,4 @@ class HtmlLog:
     def clear(self):
         self.htmlCode = ""
 
-htmlLog = HtmlLog()
+html_log = HtmlLog()
