@@ -2,9 +2,9 @@ version: '3'
 
 # Úložiště
 volumes:
-  postgis-data:
+  postgis_data:
     driver: local
-  backup-data:
+  backup_data:
     driver: local
   ruian-data:
     driver: local
@@ -23,7 +23,7 @@ networks:
 services:
   # PostGIS pracovní database
   postgis:
-    image: sysnetcz/postgis
+    image: sysnetcz/postgis:${POSTGIS_BUILD}
     container_name: postgis
     hostname: postgis
     domainname: ruian.docker
@@ -32,8 +32,8 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - postgis-data::/var/lib/postgresql
-      - backup-data:/backups
+      - postgis_data::/var/lib/postgresql
+      - backup_data:/backups
       - ${PWD}/var/logs/postgis:/var/log
     networks:
       backend:
