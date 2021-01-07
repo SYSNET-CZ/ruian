@@ -53,7 +53,7 @@ def safeMkDir(path):
         if actPathStr and not os.path.exists(actPathStr):
             os.mkdir(actPathStr)
 
-def extractFileName(path):
+def extract_file_name(path):
     head, tail = os.path.split(path)
 
     return tail

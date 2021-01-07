@@ -1,46 +1,46 @@
 # -*- coding: utf-8 -*-
-helpStr = """
+help_str = """
 Builds statistics from vfr2pg.py log file.
 
 Usage: buildstatistics.py [logfilename]
 """
 
 
-def convertFile(fileName):
+def convert_file(file_name):
     FILE_PREFIX = "Processing "
     FILE_SUFFIX = "..."
     TIME_PREFIX = "Time elapsed: "
 
-    inFile = open(fileName, "r")
-    outFileName = fileName[:fileName.rfind(".")] + ".csv"
-    outFile = open(outFileName, "w")
+    in_file = open(file_name, "r")
+    out_file_name = file_name[:file_name.rfind(".")] + ".csv"
+    out_file = open(out_file_name, "w")
     try:
-        outFile.write("#,Time [sec],File name\n")
-        lineCount = 0
-        fileCount = 0
-        fileName = ""
-        for line in inFile:
+        out_file.write("#,Time [sec],File name\n")
+        line_count = 0
+        file_count = 0
+        file_name = ""
+        for line in in_file:
             line = line.replace("\n", "")
             line = line.replace("\r", "")
             if line.startswith(FILE_PREFIX) and line.endswith(FILE_SUFFIX):
-                fileCount = fileCount + 1
+                file_count = file_count + 1
                 line = line[len(FILE_PREFIX):]
-                fileName = line[:line.find(" ")]
+                file_name = line[:line.find(" ")]
             elif line.startswith(TIME_PREFIX):
                 timeSec = line[len(TIME_PREFIX):line.rfind(" ")]
-                outFile.write("%d,%s,%s\n" % (fileCount, timeSec, fileName))
+                out_file.write("%d,%s,%s\n" % (file_count, timeSec, file_name))
 
-            lineCount = lineCount + 1
+            line_count = line_count + 1
 
-        print lineCount, " lines read."
+        print line_count, " lines read."
     finally:
-        inFile.close()
-        outFile.close()
+        in_file.close()
+        out_file.close()
 
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) == 1:
-        print helpStr
+        print help_str
     else:
-        convertFile(sys.argv[1])
+        convert_file(sys.argv[1])
