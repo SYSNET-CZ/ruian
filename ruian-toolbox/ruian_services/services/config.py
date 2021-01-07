@@ -67,7 +67,7 @@ def convertServicesCfg(config):
             config.setAttr(servicesAttr, importerConfig.attrs[importerAttrsMapper[servicesAttr]])
 
 
-config = Config("RUIANServices.cfg", servicesConfigAttrs, convertServicesCfg, moduleFile=__file__)
+config = Config("ruian_services.cfg", servicesConfigAttrs, convertServicesCfg, moduleFile=__file__)
 
 def getPortSpecification():
     if config.portNumber == 80:

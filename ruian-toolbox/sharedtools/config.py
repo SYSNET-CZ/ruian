@@ -232,16 +232,16 @@ def convertRUIANDownloadCfg(config):
     config.downloadFullDatabase = isTrue(config.downloadFullDatabase)
     config.uncompressDownloadedFiles = isTrue(config.uncompressDownloadedFiles)
     config.runImporter = isTrue(config.runImporter)
-    config.dataDir = config.dataDir.replace("/", os.sep)
-    config.dataDir = config.dataDir.replace("\\", os.sep)
-    config.dataDir = base.pathWithLastSlash(config.dataDir)
-    if not os.path.isabs(config.dataDir):
-        result = os.path.dirname(config.moduleFile) + os.path.sep + config.dataDir
+    config.data_dir = config.data_dir.replace("/", os.sep)
+    config.data_dir = config.data_dir.replace("\\", os.sep)
+    config.data_dir = base.pathWithLastSlash(config.data_dir)
+    if not os.path.isabs(config.data_dir):
+        result = os.path.dirname(config.moduleFile) + os.path.sep + config.data_dir
         result = os.path.normpath(result)
-        config.dataDir = base.pathWithLastSlash(result)
+        config.data_dir = base.pathWithLastSlash(result)
 
-    config.ignoreHistoricalData = isTrue(config.ignoreHistoricalData)
-    RUIANDownloadInfoFile().load(config.dataDir + "Info.txt")
+    config.ignore_historical_data = isTrue(config.ignore_historical_data)
+    RUIANDownloadInfoFile().load(config.data_dir + "Info.txt")
     pass
 
 def RUIANDownloadConfig():
@@ -321,19 +321,19 @@ def getRUIANDownloaderPath():
 
 
 def getRUIANServicesBasePath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices") + os.sep
+    return os.path.join(getRUIANToolboxPath(),"ruian_services") + os.sep
 
 
 def getRUIANServicesPath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices","services") + os.sep
+    return os.path.join(getRUIANToolboxPath(),"ruian_services","services") + os.sep
 
 
 def getRUIANServicesHTMLPath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices","HTML") + os.sep
+    return os.path.join(getRUIANToolboxPath(),"ruian_services","HTML") + os.sep
 
 
 def getRUIANServicesSQLScriptsPath():
-    return os.path.join(getRUIANToolboxPath(),"RUIANServices","SqlScripts") + os.sep
+    return os.path.join(getRUIANToolboxPath(),"ruian_services","SqlScripts") + os.sep
 
 
 def getDataDirFullPath():
