@@ -6,7 +6,7 @@
 #       -   /opt/ruian/toolbox/sharedtools/DownloadedData
 #       -   /opt/ruian/toolbox/DownloadRUIAN.cfg
 #       -   /opt/ruian/toolbox/ImportRUIAN.cfg
-#       -   /opt/ruian/toolbox/RUIANServices.cfg
+#       -   /opt/ruian/toolbox/ruian_services.cfg
 # 
 # Spustit napriklad:
 #       docker run -d --name ruian-import --network ruian-net -v vfr-data:/opt/ruian/toolbox/sharedtools/DownloadedData -t sysnetcz/ruian-import

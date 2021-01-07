@@ -62,7 +62,7 @@ services:
       - ruian-data:${RUIAN_DATA_DIR}
       - ${PWD}/contrib/conf/toolbox/DownloadRUIAN.cfg:/opt/ruian/toolbox/DownloadRUIAN.cfg
       - ${PWD}/contrib/conf/toolbox/ImportRUIAN.cfg:/opt/ruian/toolbox/ImportRUIAN.cfg
-      - ${PWD}/contrib/conf/toolbox/RUIANServices.cfg:/opt/ruian/toolbox/RUIANServices.cfg
+      - ${PWD}/contrib/conf/toolbox/ruian_services.cfg:/opt/ruian/toolbox/ruian_services.cfg
       - ${PWD}/contrib/logs/importer:${RUIAN_LOG}
     networks:
       backend:
@@ -92,7 +92,7 @@ services:
     volumes:
       - ${PWD}/contrib/conf/toolbox/DownloadRUIAN.cfg:/opt/ruian/toolbox/DownloadRUIAN.cfg
       - ${PWD}/contrib/conf/toolbox/ImportRUIAN.cfg:/opt/ruian/toolbox/ImportRUIAN.cfg
-      - ${PWD}/contrib/conf/toolbox/RUIANServices.cfg:/opt/ruian/toolbox/RUIANServices.cfg
+      - ${PWD}/contrib/conf/toolbox/ruian_services.cfg:/opt/ruian/toolbox/ruian_services.cfg
       - ${PWD}/contrib/logs/service:${RUIAN_LOG}
     networks:
       backend:
