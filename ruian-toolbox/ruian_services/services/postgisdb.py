@@ -2,29 +2,48 @@
 __author__ = 'SYSNET'
 
 import psycopg2
-from RUIANConnection import *
-import re
+import sys
 
+import shared
 from config import config
-import shared; shared.setupPaths()
-from sharedtools.log import logger
-from sharedtools.config import getRUIANServicesHTMLPath
-from sharedtools.base import getFileContent
+from ruian_connection import *
+
+from shared_tools.log import logger
+from shared_tools.configuration import get_ruian_services_html_path
+from shared_tools.base import get_file_content
 import HTTPShared
 
+shared.setup_paths()
+
 DATABASE_HOST = config.databaseHost
-PORT          = config.databasePort
+PORT = config.databasePort
 DATABASE_NAME = config.databaseName
-USER_NAME     = config.databaseUserName
-PASSWORD      = config.databasePassword
+USER_NAME = config.databaseUserName
+PASSWORD = config.databasePassword
+
+DB_CONF = {
+    "host": config.databaseHost,
+    "database": config.databaseName,
+    "port": config.databasePort,
+    "user": config.databaseUserName,
+    "password": config.databasePassword,
+}
+
+DB_CONF_TEST = {
+    "host": "localhost",
+    "database": "ruian",
+    "port": "25432",
+    "user": "docker",
+    "password": "docker",
+}
+
 
 SERVER_HTTP = config.serverHTTP
 PORT_NUMBER = config.portNumber
 SERVICES_WEB_PATH = config.servicesWebPath
 
 TABLE_NAME = "address_points"
-ADDRESSPOINTS_TABLENAME = "address_points"
-
+ADDRESS_POINTS_TABLE_NAME = "address_points"
 
 ITEM_TO_DBFIELDS = {
     "id": "gid",
@@ -41,19 +60,40 @@ ITEM_TO_DBFIELDS = {
     "JTSKY": "longitude"
 }
 
-def noneToString(item):
+
+def open_connection(test=False):
+    conf = DB_CONF
+    if test:
+        conf = DB_CONF_TEST
+    try:
+        conn = psycopg2.connect(
+            host=conf["host"],
+            database=conf["database"],
+            port=conf["port"],
+            user=conf["user"],
+            password=conf["password"]
+        )
+    except psycopg2.Error as e:
+        logger.error(str(e))
+        conn = None
+    return conn
+
+
+def none_to_string(item):
     if item is None:
         return ""
     else:
         return item
 
-def numberToString(number):
+
+def number_to_string(number):
     if number is None:
         return ""
     else:
         return str(number)
 
-def formatToQuery(item):
+
+def format_to_query(item):
     if item == "":
         return None
     elif item.strip().isdigit():
@@ -61,22 +101,23 @@ def formatToQuery(item):
     else:
         return item
 
-def numberValue(str):
-    if str != "":
-        s = str.split(" ")
+
+def number_value(value):
+    if value != "":
+        s = value.split(" ")
         return s[1]
     else:
         return ""
 
-class PostGISDatabase():
 
-    def __init__(self):
-        self.conection = psycopg2.connect(host = config.databaseHost, database = config.databaseName,
-                                          port = config.databasePort, user = config.databaseUserName,
-                                          password = config.databasePassword)
+class PostGISDatabase:
+    conn = None
 
-    def getQueryResult(self, query):
-        cursor = self.conection.cursor()
+    def __init__(self, test=False):
+        self.conn = open_connection(test=test)
+
+    def get_query_result(self, query):
+        cursor = self.conn.cursor()
         cursor.execute(query)
 
         rows = []
@@ -86,59 +127,73 @@ class PostGISDatabase():
             rows.append(row)
         return rows
 
-def selectSQL(searchSQL):
-    if searchSQL == None or searchSQL == "": return None
+
+def select_sql(search_sql):
+    if search_sql is None or search_sql == "":
+        return None
 
     try:
         db = PostGISDatabase()
-        cursor = db.conection.cursor()
-        cursor.execute(searchSQL)
+        cursor = db.conn.cursor()
+        cursor.execute(search_sql)
         return cursor
-    except:
-        import sys
-        return[sys.exc_info()[0]]
+    except psycopg2.Error as e:
+        logger.error(str(e))
+        return [sys.exc_info()[0]]
 
-def _findAddress(ID):
-    con = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
-    cur = con.cursor()
-    cur.execute("SELECT nazev_ulice, cislo_domovni, typ_so, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, nazev_casti_obce, nazev_mop FROM " + TABLE_NAME + " WHERE gid = "+ str(ID))
+
+def _find_address(identifier, test=False):
+    conn = open_connection(test=test)
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT " +
+        "nazev_ulice, cislo_domovni, typ_so, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, " +
+        "nazev_casti_obce, nazev_mop FROM " + TABLE_NAME + " WHERE gid = " + str(identifier))
     row = cur.fetchone()
     if row:
-        (houseNumber, recordNumber) = HTTPShared.analyseRow(row[2], numberToString(row[1]))
-        a= numberValue(noneToString(row[8]))
-        return Address(noneToString(row[0]),houseNumber,recordNumber,numberToString(row[3]), noneToString(row[4]),numberToString(row[5]),noneToString(row[6]),noneToString(row[7]),a)
+        (houseNumber, recordNumber) = HTTPShared.analyseRow(row[2], number_to_string(row[1]))
+        a = number_value(none_to_string(row[8]))
+        return Address(none_to_string(row[0]), houseNumber, recordNumber, number_to_string(row[3]),
+                       none_to_string(row[4]),
+                       number_to_string(row[5]), none_to_string(row[6]), none_to_string(row[7]), a)
     else:
         return None
 
 
-
-def _getNearbyLocalities(y, x, distance, maxCount = 100):
-    maxCount = int(maxCount)
-    if maxCount > 10000:maxCount = 10000
-    con = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
-    cur = con.cursor()
+def _get_nearby_localities(y, x, distance, max_count=100, test=False):
+    max_count = int(max_count)
+    if max_count > 10000:
+        max_count = 10000
+    conn = open_connection(test=test)
+    cur = conn.cursor()
     geom = "the_geom,ST_GeomFromText('POINT(-%s -%s)',5514)" % (str(x), str(y))
     query = "SELECT gid, nazev_obce, nazev_casti_obce, nazev_ulice, typ_so, cislo_domovni, cislo_orientacni, " + \
-                   "znak_cisla_orientacniho, psc, nazev_mop, ST_Distance(%s) d1 FROM %s WHERE ST_DWithin(%s,%s) order by d1 LIMIT %s;" % (geom, TABLE_NAME, geom, str(distance), str(maxCount))
+            "znak_cisla_orientacniho, psc, nazev_mop, " + \
+            "ST_Distance(%s) d1 FROM %s WHERE ST_DWithin(%s,%s) order by d1 LIMIT %s;" % (
+                geom, TABLE_NAME, geom, str(distance), str(max_count))
     cur.execute(query)
     rows = cur.fetchall()
     return rows
 
-def addToQuery(atribute, comparator, first):
+
+def add_to_query(attribute, comparator, first):
     if first:
-        query = atribute + " " + comparator + " %s"
+        query = attribute + " " + comparator + " %s"
     else:
-        query = " AND " + atribute + " " + comparator + " %s"
+        query = " AND " + attribute + " " + comparator + " %s"
     return query
 
-def _validateAddress(dictionary, returnRow = False):
+
+def _validate_address(dictionary, return_row=False, test=False):
     first = True
     oneHouseNumber = False
-    con = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
-    cursor = con.cursor()
+    conn = open_connection(test=test)
+    cursor = conn.cursor()
 
-    query = "SELECT gid, cislo_domovni, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, nazev_casti_obce, nazev_mop, nazev_ulice, typ_so FROM " + TABLE_NAME + " WHERE "
-    tuple = ()
+    query = "SELECT " + \
+            "gid, cislo_domovni, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, nazev_casti_obce, " + \
+            "nazev_mop, nazev_ulice, typ_so FROM " + TABLE_NAME + " WHERE "
+    address_tuple = ()
     for key in dictionary:
         if key == "houseNumber":
             if dictionary[key] != "":
@@ -146,9 +201,9 @@ def _validateAddress(dictionary, returnRow = False):
                     return ["False"]
                 else:
                     oneHouseNumber = True
-                query += addToQuery("typ_so","=",first)
+                query += add_to_query("typ_so", "=", first)
                 first = False
-                tuple = tuple + (u"č.p.",)
+                address_tuple = address_tuple + (u"č.p.",)
             else:
                 continue
         if key == "recordNumber":
@@ -157,58 +212,71 @@ def _validateAddress(dictionary, returnRow = False):
                     return ["False"]
                 else:
                     oneHouseNumber = True
-                query += addToQuery("typ_so","=",first)
+                query += add_to_query("typ_so", "=", first)
                 first = False
-                tuple = tuple + (u"č.ev.",)
+                address_tuple = address_tuple + (u"č.ev.",)
             else:
                 continue
 
         if key == "districtNumber" and dictionary[key] != "":
-            value = formatToQuery(dictionary["locality"] + " " + dictionary["districtNumber"])
+            value = format_to_query(dictionary["locality"] + " " + dictionary["districtNumber"])
         else:
-            value = formatToQuery(dictionary[key])
-        tuple = tuple + (value,)
+            value = format_to_query(dictionary[key])
+        address_tuple = address_tuple + (value,)
 
         if value is None:
             comparator = "is"
         else:
             comparator = "="
-        query += addToQuery(ITEM_TO_DBFIELDS[key], comparator, first)
+        query += add_to_query(ITEM_TO_DBFIELDS[key], comparator, first)
         first = False
 
-    a = cursor.mogrify(query, tuple)
+    a = cursor.mogrify(query, address_tuple)
     cursor.execute(a)
     row = cursor.fetchone()
 
     result = None
-    if returnRow:
-        if row:result = row
+    if return_row:
+        if row:
+            result = row
     else:
-        if row:result = ["True"]
-        else: result = ["False"]
+        if row:
+            result = ["True"]
+        else:
+            result = ["False"]
     return result
 
-def _findCoordinates(ID):
-    con = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
-    cur = con.cursor()
-    cur.execute("SELECT latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, cislo_domovni, typ_so, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop FROM " + TABLE_NAME + " WHERE gid = "+ str(ID))
+
+def _find_coordinates(identifier, test=False):
+    conn = open_connection(test=test)
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT " +
+        "latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, cislo_domovni, typ_so, " +
+        "cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop FROM " +
+        TABLE_NAME + " WHERE gid = " + str(identifier))
     row = cur.fetchone()
     if row and row[0] is not None and row[1] is not None:
-        (houseNumber, recordNumber) = HTTPShared.analyseRow(row[7], numberToString(row[6]))
-        c = (str("{:10.2f}".format(row[1])).strip(), str("{:10.2f}".format(row[0])).strip(), row[2], row[3], noneToString(row[4]), noneToString(row[5]), houseNumber, recordNumber, numberToString(row[8]), noneToString(row[9]), numberToString(row[10]), numberValue(noneToString(row[11])))
+        (houseNumber, recordNumber) = HTTPShared.analyseRow(row[7], number_to_string(row[6]))
+        c = (str("{:10.2f}".format(row[1])).strip(), str("{:10.2f}".format(row[0])).strip(), row[2], row[3],
+             none_to_string(row[4]), none_to_string(row[5]), houseNumber, recordNumber, number_to_string(row[8]),
+             none_to_string(row[9]), number_to_string(row[10]), number_value(none_to_string(row[11])))
         return [c]
     else:
         return []
 
-def _findCoordinatesByAddress(dictionary):
-    if dictionary.has_key("districtNumber") and dictionary["districtNumber"] != "":
+
+def _find_coordinates_by_address(dictionary, test=False):
+    if "districtNumber" in dictionary and dictionary["districtNumber"] != "":
         dictionary["districtNumber"] = "Praha " + dictionary["districtNumber"]
 
     first = True
-    con = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
+    con = open_connection(test=test)
     cur = con.cursor()
 
-    query = "SELECT latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, cislo_domovni, typ_so, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop FROM " + TABLE_NAME + " WHERE "
+    query = "SELECT " + \
+            "latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, cislo_domovni, typ_so, " + \
+            "cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop FROM " + TABLE_NAME + " WHERE "
 
     for key in dictionary:
         if dictionary[key] != "":
@@ -225,16 +293,19 @@ def _findCoordinatesByAddress(dictionary):
 
     for row in rows:
         if (row[0] is not None) and (row[1] is not None):
-            (houseNumber, recordNumber) = HTTPShared.analyseRow(row[7], numberToString(row[6]))
-            coordinates.append((str("{:10.2f}".format(row[0])).strip(),str("{:10.2f}".format(row[1])).strip(), row[2], row[3], noneToString(row[4]), noneToString(row[5]), houseNumber, recordNumber, numberToString(row[8]), noneToString(row[9]), numberToString(row[10]), numberValue(noneToString(row[11]))))
+            (houseNumber, recordNumber) = HTTPShared.analyseRow(row[7], number_to_string(row[6]))
+            coordinates.append((str("{:10.2f}".format(row[0])).strip(), str("{:10.2f}".format(row[1])).strip(), row[2],
+                                row[3], none_to_string(row[4]), none_to_string(row[5]), houseNumber, recordNumber,
+                                number_to_string(row[8]), none_to_string(row[9]), number_to_string(row[10]),
+                                number_value(none_to_string(row[11]))))
         else:
-            pass    #co se ma stat kdyz adresa nema souradnice?
+            pass  # co se ma stat kdyz adresa nema souradnice?
     return coordinates
 
-def _getRUIANVersionDate():
-    result = "unassigned _getRUIANVersionDate"
+
+def _get_ruian_version_date(test=False):
     try:
-        connection = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
+        connection = open_connection(test=test)
         cursor = connection.cursor()
         try:
             query = 'select * from ruian_dates'
@@ -242,21 +313,22 @@ def _getRUIANVersionDate():
             row = cursor.fetchone()
             result = row[1]
         except psycopg2.Error as e:
-            result = "Error: Could not execute query to %s at %s:%s as %s:%s" % (DATABASE_NAME, DATABASE_HOST, PORT, USER_NAME, query)
-            logger.info("Error: " + e.pgerror)
+            logger.error(str(e))
             return "ERROR:" + e.pgerror
         finally:
             cursor.close()
             connection.close()
 
     except psycopg2.Error as e:
-        result = "Error: Could connect to %s at %s:%s as %s\n%s" % (DATABASE_NAME, DATABASE_HOST, PORT, USER_NAME, str(e))
-        logger.info(result)
+        result = "Error: Could connect to %s at %s:%s as %s\n%s" % (
+            DATABASE_NAME, DATABASE_HOST, PORT, USER_NAME, str(e))
+        logger.error(result)
 
     return result
 
-def _saveRUIANVersionDateToday():
-    connection = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
+
+def _save_ruian_version_date_today(test=False):
+    connection = open_connection(test=test)
     cursor = connection.cursor()
     try:
         query = 'DROP TABLE IF EXISTS ruian_dates;'
@@ -271,11 +343,12 @@ def _saveRUIANVersionDateToday():
         connection.close()
     pass
 
-def getTableCount(tableName):
-    connection = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
+
+def get_table_count(table_name, test=False):
+    connection = open_connection(test=test)
     cursor = connection.cursor()
     try:
-        cursor.execute("SELECT count(*) FROM %s;" % tableName)
+        cursor.execute("SELECT count(*) FROM %s;" % table_name)
         row = cursor.fetchone()
         result = row[0]
     finally:
@@ -283,43 +356,47 @@ def getTableCount(tableName):
         connection.close()
     return str(result)
 
-def getPortSpecification():
+
+def get_port_specification():
     if config.portNumber == 80:
         return ""
     else:
         return ":" + str(config.portNumber)
 
-def _getDBDetails(servicePathInfo, queryParams, response):
-    if servicePathInfo != None and len(servicePathInfo) > 1 and servicePathInfo[0].lower() == "recordcount":
-        response.htmlData = getTableCount(servicePathInfo[1])
+
+def _get_db_details(service_path_info, response, test=False):
+    if service_path_info is not None and len(service_path_info) > 1 and service_path_info[0].lower() == "recordcount":
+        response.htmlData = get_table_count(service_path_info[1])
         response.mimeFormat = "text/plain"
         response.handled = True
     else:
         response.mimeFormat = "text/html"
         response.handled = True
 
-        result = getFileContent(getRUIANServicesHTMLPath() + "DatabaseDetails.html")
+        result = get_file_content(get_ruian_services_html_path() + "DatabaseDetails.html")
         result = result.replace("#DATABASE_NAME#", DATABASE_NAME)
 
-        connection = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, port= PORT, user=USER_NAME, password=PASSWORD)
+        connection = open_connection(test=test)
         cursor = connection.cursor()
         try:
             oddRow = False
             tablesList = "<table>\n"
             tablesList += '\t\t<tr valign="bottom"><th align="left">Tabulka</th><th>Záznamů</th></tr>\n'
-            cursor.execute("SELECT table_name FROM information_schema.tables where table_schema='public'ORDER BY table_name;")
+            cursor.execute(
+                "SELECT table_name FROM information_schema.tables where table_schema='public'ORDER BY table_name;")
             tableNames = []
             rows = cursor.fetchall()
             for row in rows:
                 tableName = row[0]
                 tableNames.append(tableName)
-                tablesList += '\t\t<tr %s><td>%s</td><td align="right" id="%s_TD"></td></tr>\n' % (["", 'class="altColor"'][int(oddRow)], tableName, tableName)
+                tablesList += '\t\t<tr %s><td>%s</td><td align="right" id="%s_TD"></td></tr>\n' % (
+                    ["", 'class="altColor"'][int(oddRow)], tableName, tableName)
                 oddRow = not oddRow
             tablesList += "\t</table>"
             result = result.replace("#TABLES_LIST#", tablesList)
             result = result.replace("#TABLES_COUNT#", str(len(rows) + 1))
             result = result.replace("#TABLE_NAMES#", str(tableNames))
-            restPyURL = "http://" + SERVER_HTTP + getPortSpecification() + "/" + SERVICES_WEB_PATH + "/"
+            restPyURL = "http://" + SERVER_HTTP + get_port_specification() + "/" + SERVICES_WEB_PATH + "/"
             result = result.replace("#SERVICES_PATH#", restPyURL)
             result = result.replace("\r\n", "\n")
             response.htmlData = result
@@ -328,39 +405,43 @@ def _getDBDetails(servicePathInfo, queryParams, response):
             connection.close()
     pass
 
-def _getAddresses(queryParams):
+
+def _get_addresses(query_params):
     sqlItems = {
-        "HouseNumber"  : "cast(cislo_domovni as text) like '%s%%' and typ_so='č.p.'",
-        "RecordNumber" : "cast(cislo_domovni as text) ilike '%s%%' and typ_so<>'č.p.'",
-        "OrientationNumber" : "cast(cislo_orientacni as text) like '%s%%'",
-        "OrientationNumberCharacter" : "znak_cisla_orientacniho = '%s'",
-        "ZIPCode" : "cast(psc as text) like '%s%%'",
-        "Locality" : "nazev_obce ilike '%%%s%%'",
-        "Street" : "nazev_ulice ilike '%%%s%%'",
-        "LocalityPart" : "nazev_casti_obce ilike '%%%s%%'",
-        "DistrictNumber" : "nazev_mop = 'Praha %s'"
+        "HouseNumber": "cast(cislo_domovni as text) like '%s%%' and typ_so='č.p.'",
+        "RecordNumber": "cast(cislo_domovni as text) ilike '%s%%' and typ_so<>'č.p.'",
+        "OrientationNumber": "cast(cislo_orientacni as text) like '%s%%'",
+        "OrientationNumberCharacter": "znak_cisla_orientacniho = '%s'",
+        "ZIPCode": "cast(psc as text) like '%s%%'",
+        "Locality": "nazev_obce ilike '%%%s%%'",
+        "Street": "nazev_ulice ilike '%%%s%%'",
+        "LocalityPart": "nazev_casti_obce ilike '%%%s%%'",
+        "DistrictNumber": "nazev_mop = 'Praha %s'"
     }
 
-
-    fields = " cislo_domovni, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, nazev_casti_obce, nazev_mop, nazev_ulice, typ_so, gid "
-    result = ""
+    fields = " cislo_domovni, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, nazev_casti_obce, " + \
+             "nazev_mop, nazev_ulice, typ_so, gid "
 
     sqlParts = []
     for key in sqlItems:
         dictKey = key[:1].lower() + key[1:]
-        if queryParams.has_key(dictKey) and queryParams[dictKey] != "":
-            sqlParts.append(sqlItems[key] % (queryParams[dictKey]))
+        if dictKey in query_params and query_params[dictKey] != "":
+            sqlParts.append(sqlItems[key] % (query_params[dictKey]))
 
-    if len(sqlParts) == 0: return []
+    if len(sqlParts) == 0:
+        return []
 
-    sqlBase = u" from %s where " % (ADDRESSPOINTS_TABLENAME) + " and ".join(sqlParts)
+    sqlBase = u" from %s where " % ADDRESS_POINTS_TABLE_NAME + " and ".join(sqlParts)
 
-    searchSQL = u"select %s %s order by nazev_obce, nazev_casti_obce, psc, nazev_ulice, nazev_mop, typ_so, cislo_domovni, cislo_orientacni, znak_cisla_orientacniho limit 2" % (fields, sqlBase)
-    rows = selectSQL(searchSQL)
+    searchSQL = u"select %s %s order by nazev_obce, nazev_casti_obce, psc, nazev_ulice, nazev_mop, typ_so, cislo_domovni, cislo_orientacni, znak_cisla_orientacniho limit 2" % (
+        fields, sqlBase)
+    rows = select_sql(searchSQL)
     result = []
-    for row in rows: result.append(row)
+    for row in rows:
+        result.append(row)
 
-    return  result
+    return result
 
-def _getTableNames():
+
+def _get_table_names():
     return '"ahoj", "table2"'

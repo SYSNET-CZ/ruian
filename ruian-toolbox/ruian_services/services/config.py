@@ -9,9 +9,9 @@
 # -------------------------------------------------------------------------------
 
 import shared
-shared.setupPaths(depth=2)
+shared.setup_paths(depth=2)
 
-from sharedtools.config import Config, RUIANImporterConfig
+from shared_tools.configuration import Configuration, ruian_importer_config
 
 servicesConfigAttrs = {
                 "serverHTTP": 'ruian.sysnet.cz',
@@ -61,13 +61,13 @@ def convertServicesCfg(config):
         "databaseUserName" : "user",
         "databasePassword" : "password"
     }
-    importerConfig = RUIANImporterConfig()
+    importerConfig = ruian_importer_config()
     for servicesAttr in importerAttrsMapper:
         if config.attrs[servicesAttr] == servicesConfigAttrs[servicesAttr]:
-            config.setAttr(servicesAttr, importerConfig.attrs[importerAttrsMapper[servicesAttr]])
+            config.set_attr(servicesAttr, importerConfig.attrs[importerAttrsMapper[servicesAttr]])
 
 
-config = Config("ruian_services.cfg", servicesConfigAttrs, convertServicesCfg, moduleFile=__file__)
+config = Configuration("ruian_services.cfg", servicesConfigAttrs, convertServicesCfg, module_file=__file__)
 
 def getPortSpecification():
     if config.portNumber == 80:

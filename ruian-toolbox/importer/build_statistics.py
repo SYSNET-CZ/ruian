@@ -2,7 +2,7 @@
 help_str = """
 Builds statistics from vfr2pg.py log file.
 
-Usage: buildstatistics.py [logfilename]
+Usage: build_statistics.py [log_file_name]
 """
 
 

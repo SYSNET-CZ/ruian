@@ -8,7 +8,7 @@
 # License:     CC BY-SA 4.0
 #-------------------------------------------------------------------------------
 
-import downloader.htmllog
+import downloader.html_log
 import unittest
 import os
 
@@ -28,7 +28,7 @@ class TestInfoFile(unittest.TestCase):
 
     def testSave(self):
         """ Tests Save and consequently Init """
-        htmlLog = downloader.htmllog.HtmlLog()
+        htmlLog = downloader.html_log.HtmlLog()
         htmlLog.save(self.FILENAME)
 
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     #unittest.main()
     os.remove("test.html")
 
-    htmlLog = downloader.htmllog.HtmlLog()
+    htmlLog = downloader.html_log.HtmlLog()
     htmlLog.htmlCode = "<div>Info 1 verze 0</div>"
     htmlLog.save("test.html")
 
@@ -46,9 +46,9 @@ if __name__ == '__main__':
     htmlLog.htmlCode = "<div>Info 1 verze 0.2</div>"
     htmlLog.save("test.html")
 
-    htmlLog.closeSection("test.html")
+    htmlLog.close_section("test.html")
 
-    htmlLog = downloader.htmllog.HtmlLog()
+    htmlLog = downloader.html_log.HtmlLog()
     htmlLog.htmlCode = "<div>Info 2 verze 0</div>"
     htmlLog.save("test.html")
 
@@ -57,4 +57,4 @@ if __name__ == '__main__':
 
     htmlLog.htmlCode = "<div>Info 2 verze 2</div>"
     htmlLog.save("test.html")
-    htmlLog.closeSection("test.html")
+    htmlLog.close_section("test.html")

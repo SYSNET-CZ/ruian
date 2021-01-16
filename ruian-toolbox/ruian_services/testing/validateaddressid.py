@@ -47,5 +47,5 @@ def test(testerParam = None):
 
 
 if __name__ == '__main__':
-    sharedtools.setupUTF()
+    sharedtools.setup_utf()
     test()

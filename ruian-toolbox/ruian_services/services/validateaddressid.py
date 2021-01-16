@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------------------
 
 from HTTPShared import *
-import RUIANConnection
+import ruian_connection
 
 def validateAddressId(resultFormat, addressPlaceId):
     return ""
@@ -19,7 +19,7 @@ def validateAddressIdServiceHandler(queryParams, response):
     response.mimeFormat = builder.getMimeFormat()
     addressPlaceId = getQueryValue(queryParams, "AddressPlaceId", "")
     if addressPlaceId.isdigit():
-        address = RUIANConnection.findAddress(addressPlaceId)
+        address = ruian_connection.find_address(addressPlaceId)
         if address:
             response.htmlData = builder.listToResponseText(["True"])
         else:

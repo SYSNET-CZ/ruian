@@ -12,7 +12,7 @@
 __author__ = 'Radek Augustýn'
 
 
-import RUIANConnection
+import ruian_connection
 from HTTPShared import *
 import parseaddress
 
@@ -55,9 +55,9 @@ def nearByAddresses(builder, JTSKY, JTSKX, Distance, withID, withDistance, maxCo
     if JTSKX.find(".") >= 0: JTSKX = JTSKX[:JTSKX.find(".")]
     if JTSKX.find(",") >= 0: JTSKX = JTSKX[:JTSKX.find(",")]
     if JTSKX.isdigit() and JTSKY.isdigit() and Distance.isdigit():
-        addresses = RUIANConnection.getNearbyLocalities(JTSKX, JTSKY, Distance, maxCount)
-        parser = parseaddress.AddressParser()
-        FormattedAddress = parser.buildAddress(builder, addresses, withID, withDistance)
+        addresses = ruian_connection.get_nearby_localities(JTSKX, JTSKY, Distance, maxCount)
+        parser = parseaddress
+        FormattedAddress = parser.build_address(builder, addresses, withID, withDistance)
         s = builder.listToResponseText(FormattedAddress, True)
         return s
     else:

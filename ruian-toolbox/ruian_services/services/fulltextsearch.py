@@ -14,9 +14,9 @@ from HTTPShared import *
 import parseaddress
 
 def searchAddress(builder, searchFlag, searchText, withID=True):
-    parser = parseaddress.AddressParser()
+    parser = parseaddress
     candidates = parser.fullTextSearchAddress(searchText)
-    items = parser.buildAddress(builder, candidates, withID)
+    items = parser.build_address(builder, candidates, withID)
     s = builder.listToResponseText(items, recordSeparator=builder.recordSeparator)
     return s
 

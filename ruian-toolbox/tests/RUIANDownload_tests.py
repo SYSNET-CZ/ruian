@@ -10,4 +10,4 @@
 
 import downloader.downloadruian
 
-print downloader.downloadruian.getDataDirFullPath()
+print downloader.downloadruian.get_data_dir_full_path()

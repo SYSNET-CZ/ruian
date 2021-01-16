@@ -193,7 +193,7 @@ def test():
 
     tester.addTest("OK test", "Test value", "Test value", "OK Test")
     tester.addTest("Fail test", "Wrong test value", "Test value", "Error message")
-    tester.saveToHTML("sharedtools.html")
+    tester.saveToHTML("shared_tools.html")
 
 
 if __name__ == '__main__':

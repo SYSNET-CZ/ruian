@@ -10,7 +10,7 @@
 #-------------------------------------------------------------------------------
 
 import psycopg2
-import compileaddress
+import compile_address
 import HTTPShared
 from config import config
 
@@ -363,7 +363,7 @@ def getFillResults(queryParams):
             houseNumber, recordNumber = analyseRow(typ_so, houseNumber)
             districtNumber = extractDictrictNumber(nazev_mop)
 
-            rowLabel = compileaddress.compileAddress(builder, street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber)
+            rowLabel = compile_address.compileAddress(builder, street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber)
 
             resultArray.append(":".join(htmlItems) + ":" + rowLabel)
             if len(resultArray) >= pageSize: break
@@ -480,7 +480,7 @@ def getFullTextAutocompleteResults(queryParams, nameToken, resultFormat, maxCoun
                 houseNumber, recordNumber = analyseRow(typ_so, houseNumber)
                 districtNumber = extractDictrictNumber(nazev_mop)
 
-                rowLabel = compileaddress.compileAddress(builder, street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber)
+                rowLabel = compile_address.compileAddress(builder, street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber)
                 if resultFormat.lower() == "addressparts":
                     idValue =  itemToStr(street) + "," + itemToStr(houseNumber) + "," + itemToStr(recordNumber) + "," + itemToStr(orientationNumber) + "," + \
                             itemToStr(orientationNumberCharacter) + "," + itemToStr(zipCode) + "," + \

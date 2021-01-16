@@ -1,29 +1,34 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        log
 # Purpose:     This module creates standard logger for whole application.
 #
 # Author:      Radek Augustýn
 # Copyright:   (c) VUGTK, v.v.i. 2014
 # License:     CC BY-SA 4.0
-#-------------------------------------------------------------------------------
+# Contributor: Radim Jäger, 2021. Consolidated for Python 3
+# -------------------------------------------------------------------------------
 import logging
-from base import createDirForFile
+from base import create_dir_for_file
 
 
-logger = None
+logger = logging.getLogger(__name__)
 
 
-def clearLogFile(logFileName):
-    " This procedure creates empty log file with file name LOG_FILENAME "
-    f = open(logFileName, 'w')
+def clear_log_file(log_file_name):
+    """ This procedure creates empty log file with file name LOG_FILENAME """
+    f = open(log_file_name, 'w')
     f.close()
 
 
-def createLogger(logFileName):
+def create_logger(log_file_name):
     global logger
 
     # create logger
+    if logger is not None:
+        if not logger.handlers:
+            logger = None       # logger nebyl vytvořen pomocí této funkce
+
     if logger is None:
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
@@ -37,8 +42,8 @@ def createLogger(logFileName):
         logger.addHandler(ch)
 
         # Create and setup log file parameters
-        createDirForFile(logFileName)
-        fileHandler = logging.FileHandler(logFileName)
+        create_dir_for_file(log_file_name)
+        fileHandler = logging.FileHandler(log_file_name)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         fileHandler.setFormatter(formatter)
         logger.addHandler(fileHandler)
@@ -49,7 +54,6 @@ def createLogger(logFileName):
 
 if __name__ == '__main__':
     logger.info("Logger test info")
-
     logger.debug("Logger test debug")
     logger.error("Logger test error")
     logger.critical("Logger test critical")

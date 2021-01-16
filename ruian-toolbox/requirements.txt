@@ -1,0 +1,15 @@
+lpthw.web==1.1
+# psycopg2==2.7.4
+# asn1crypto==0.24.0
+# cryptography==2.1.4
+# enum34==1.1.6
+# GDAL==2.4.2
+# idna==2.6
+# ipaddress==1.0.17
+# keyring==10.6.0
+# keyrings.alt==3.0
+# numpy==1.13.3
+web.py==0.51
+
+
+
