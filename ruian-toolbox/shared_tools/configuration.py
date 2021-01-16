@@ -355,6 +355,7 @@ def convert_ruian_importer_config(config):
 
 def ruian_importer_config():
     global x_RUIANImporterConfig
+    config_download = ruian_download_config()
     if x_RUIANImporterConfig is None:
         x_RUIANImporterConfig = Configuration(
             IMPORT_RUIAN_CFG,
@@ -372,7 +373,7 @@ def ruian_importer_config():
                 "os4GeoPath": OS4GEO_PATH,
                 "buildServicesTables": SERVICE_TABLES,
                 "buildAutocompleteTables": AUTOCOMPLETE_TABLES,
-                "dataDir": data_dir(),
+                "dataDir": config_download.dataDir,
             },
             convert_ruian_importer_config,
             def_sub_dir="importer",

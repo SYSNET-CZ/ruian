@@ -53,5 +53,4 @@ ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
 
 RUN pip install -r ./toolbox/requirements.txt
 
-
 CMD ["/bin/bash"]
