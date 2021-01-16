@@ -3,13 +3,13 @@
 # Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/services/Dockerfile -t sysnetcz/ruian-service .
 #
 # Do externiho volume:
-#       -   /opt/ruian/toolbox/sharedtools/DownloadedData
+#       -   /opt/ruian/toolbox/shared_tools/DownloadedData
 #       -   /opt/ruian/toolbox/DownloadRUIAN.cfg
 #       -   /opt/ruian/toolbox/ImportRUIAN.cfg
 #       -   /opt/ruian/toolbox/ruian_services.cfg
 # 
 # Spustit napriklad:
-#       docker run -d --name ruian-service - 8080:80 --network ruian-net -v vfr-data:/opt/ruian/toolbox/sharedtools/DownloadedData:ro -t sysnetcz/ruian-service
+#       docker run -d --name ruian-service - 8080:80 --network ruian-net -v vfr-data:/opt/ruian/toolbox/shared_tools/DownloadedData:ro -t sysnetcz/ruian-service
 #
 
 FROM sysnetcz/ruian-base:latest

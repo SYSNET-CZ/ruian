@@ -9,7 +9,7 @@
 # -------------------------------------------------------------------------------
 
 import unittest
-import compileaddress as AT
+import compile_address as AT
 
 addressCompileSamples = []
 

@@ -12,11 +12,11 @@
 __author__ = 'Radek Augustýn'
 
 from HTTPShared import *
-import RUIANConnection
+import ruian_connection
 import parseaddress
 
 def geocodeID(AddressID):
-    coordinates = RUIANConnection.findCoordinates(AddressID)
+    coordinates = ruian_connection.find_coordinates(AddressID)
     return coordinates
 
 def geocodeAddress(builder, street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber, withID, withAddress):
@@ -32,7 +32,7 @@ def geocodeAddress(builder, street, houseNumber, recordNumber, orientationNumber
             "localityPart": localityPart,
             "districtNumber": districtNumber
         }
-        coordinates = RUIANConnection.findCoordinatesByAddress(dict)
+        coordinates = ruian_connection.find_coordinates_by_address(dict)
         lines = []
         for item in coordinates:
             dictionary = {"JTSKY": item[0], "JTSKX": item[1],"id": str(item[2]), "locality": item[3], "localityPart": item[4], "street": item[5], "houseNumber": item[6], "recordNumber": item[7], "orientationNumber": item[8], "orientationNumberCharacter": item[9], "zipCode": item[10], "districtNumber": item[11]}
@@ -72,8 +72,8 @@ def geocodeAddressServiceHandler(queryParams, response):
             s = ""
 
     elif queryParams.has_key("SearchText"):
-        parser = parseaddress.AddressParser()
-        candidates = parser.fullTextSearchAddress(queryParams["SearchText"])
+        parser = parseaddress
+        candidates = parser.full_text_search_address(queryParams["SearchText"])
         lines = []
         for candidate in candidates:
             coordinates = geocodeID(candidate[0])

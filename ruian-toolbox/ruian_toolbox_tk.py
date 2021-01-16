@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
+# Hlavní ovládání aplikací. Používá framework Tk. Nehodí se k dockerizaci
 
-
-from Tkinter import *
+import tkFont
 import ttk
+from Tkinter import *
 from idlelib import ToolTip
 
-from downloader import download_ruian
-from importer import import_ruian
 from ruian_services.services import config as ruian_services_config
+from shared_tools import ruian_importer_config, ruian_download_config, GIS_LAYERS
 
 
 class SetupForm(Frame):
-    tabFramesBorder = 10
+    tab_frames_border = 10
 
     def _get_frame(self, a_name):
         return Frame(self, name=a_name, bd=5)
@@ -25,7 +25,6 @@ class SetupForm(Frame):
         lbl.grid(row=0, column=0, columnspan=2, sticky=W + E, pady=5)
 
     def __init__(self, root_element):
-        import tkFont
         self.customFont = tkFont.Font(family="Helvetica", size=9)
 
         Frame.__init__(self, root_element)
@@ -74,22 +73,27 @@ class SetupForm(Frame):
         label = Label(frame, wraplength='4i', justify=LEFT, anchor=N, text=caption)
         label.grid(row=self.editsRow, column=0, sticky=E)
         control.grid(row=self.editsRow, column=1, sticky=W + E + N + S)
-        if edit_value != "":
-            control.insert(0, edit_value)
+        if edit_value is not None:
+            if edit_value != "":
+                control.insert(0, edit_value)
         self.editsRow += 1
         return control
 
     def create_downloader_tab(self, nb):
         frame = self._get_frame("download")
 
-        config = download_ruian.config
+        config = ruian_download_config()
 
         self._get_top_label(frame, "RÚIAN Downloader umožňuje stáhnout aktuální databázi včetně stahování aktualizací.")
         self.editsRow = 1
 
+        self.add_control(Label(frame, wraplength='4i', justify=LEFT, anchor=N, text="  Konfigurace:"))
+        edit = self.add_control(Entry(frame, bd=1), a_sticky=W + E)
+        edit.insert(0, config.fileName)
+
         self.add_control(Label(frame, wraplength='4i', justify=LEFT, anchor=N, text="  Adresář se staženými daty:"))
         edit = self.add_control(Entry(frame, bd=1), a_sticky=W + E)
-        edit.insert(0, config.data_dir)
+        edit.insert(0, config.dataDir)
 
         CheckVar1 = IntVar()
         self.add_control(
@@ -99,13 +103,13 @@ class SetupForm(Frame):
         self.add_control(
             Checkbutton(frame, text="Spustit importér po stažení dat", variable=CheckVar2, onvalue=1, offvalue=0))
 
-        CheckVar4 = IntVar()
-        CheckVar4.set(1)  # int(config.ignoreHistoricalData))
+        check_var4 = IntVar()
+        check_var4.set(1)  # int(config.ignoreHistoricalData))
         self.add_control(
-            Checkbutton(frame, text="Ignorovat historická data", variable=CheckVar4, onvalue=1, offvalue=0))
+            Checkbutton(frame, text="Ignorovat historická data", variable=check_var4, onvalue=1, offvalue=0))
 
-        CheckVar3 = IntVar()
-        self.add_control(Checkbutton(frame, text="Stahovat automaticky každý den", variable=CheckVar3, onvalue=1))
+        check_var3 = IntVar()
+        self.add_control(Checkbutton(frame, text="Stahovat automaticky každý den", variable=check_var3, onvalue=1))
 
         self.add_control(Label(frame, wraplength='4i', justify=LEFT, anchor=N, text="  Čas stahování:"))
         b = self.add_control(Entry(frame, bd=1), a_sticky=W)
@@ -123,7 +127,7 @@ class SetupForm(Frame):
 
     def create_import_tab(self, nb):
         frame = self._get_frame("importTabFrame")
-        config = import_ruian.config
+        config = ruian_importer_config()
 
         self._get_top_label(
             frame,
@@ -131,6 +135,8 @@ class SetupForm(Frame):
         )
         self.editsRow = 1
 
+        self.add_control_with_label(frame, Entry(frame, bd=1), "Konfigurace:", edit_value=config.fileName)
+        self.add_control_with_label(frame, Entry(frame, bd=1), "Data:", edit_value=config.dataDir)
         self.add_control_with_label(frame, Entry(frame, bd=1), "Jméno databáze:", edit_value=config.dbname)
         self.add_control_with_label(frame, Entry(frame, bd=1), "Host:", edit_value=config.host)
         self.add_control_with_label(frame, Entry(frame, bd=1), "Port:", edit_value=config.port)
@@ -186,6 +192,6 @@ def center_window(window, w=300, h=200):
 
 if __name__ == '__main__':
     root = Tk()
-    setupForm = SetupForm(root)
-    center_window(root, 500, 350)
+    setup_form = SetupForm(root)
+    center_window(root, 600, 350)
     root.mainloop()

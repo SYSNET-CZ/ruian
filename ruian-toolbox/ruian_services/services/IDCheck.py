@@ -3,17 +3,17 @@
 
 from HTTPShared import *
 
-import RUIANConnection
+import ruian_connection
 
-import compileaddress
+import compile_address
 import sharetools
 
 def IDCheckServiceHandler(queryParams, response, builder):
     response.mimeFormat = builder.getMimeFormat()
-    address = RUIANConnection.findAddress(sharetools.getKeyValue(queryParams, "AddressPlaceId"))
+    address = ruian_connection.find_address(sharetools.get_key_value(queryParams, "AddressPlaceId"))
     response.handled = True
     if address:
-        html = compileaddress.compileAddress(builder, address.street, address.houseNumber, address.recordNumber, address.orientationNumber, address.orientationNumberCharacter, address.zipCode, address.locality, address.localityPart, address.districtNumber)
+        html = compile_address.compileAddress(builder, address.street, address.houseNumber, address.recordNumber, address.orientationNumber, address.orientationNumberCharacter, address.zipCode, address.locality, address.localityPart, address.districtNumber)
         response.htmlData = builder.listToResponseText([html])
 
     return response

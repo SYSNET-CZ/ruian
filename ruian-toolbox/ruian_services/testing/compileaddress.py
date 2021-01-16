@@ -101,5 +101,5 @@ Adresní místo lze zadat buď pomocí jeho identifikátoru RÚIAN, textového �
 
 
 if __name__ == '__main__':
-    sharedtools.setupUTF()
+    sharedtools.setup_utf()
     test()

@@ -3,7 +3,7 @@
 
 __author__ = 'Liska'
 
-from RUIANConnection import *
+from ruian_connection import *
 
 database = {
             "12351": Locality(Address(u"Arnošta Valenty", u"670", u"", u"31", u"19800", u"Praha", u"Černý Most", u"9"), Coordinates(0,0)),

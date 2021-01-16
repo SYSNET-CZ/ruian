@@ -12,7 +12,7 @@
 __author__ = 'Radek Augustýn'
 
 from HTTPShared import *
-import RUIANConnection
+import ruian_connection
 
 def buildValidateDict(street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber):
     return {
@@ -34,7 +34,7 @@ def validateAddress(builder, street, houseNumber, recordNumber, orientationNumbe
 
     dict = buildValidateDict(street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber)
 
-    result = RUIANConnection.validateAddress(dict)
+    result = ruian_connection.validate_address(dict)
     return builder.listToResponseText(result)
 
 def validateAddressServiceHandler(queryParams, response):

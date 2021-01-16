@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__author__ = 'raugustyn'
+__author__ = 'rjaeger'
 
 import sys
 from setuptools import setup
@@ -7,12 +7,13 @@ from setuptools import setup
 PLATFORM_IS_WINDOWS = sys.platform.lower().startswith('win')
 
 setup(
-    name="RUIANToolbox",
+    name="SYSNET RUIANToolbox",
     version="100",
-    description="Knihovna RUIAN Toolbox",
-    author="Radek Augustyn, Petr Liska, Tomas Vacek",
-    author_email="radek.augustyn@vugtk.cz",
-    url="https://github.com/vugtk21/RUIANToolbox",
+    description="Knihovna SYSNET RUIAN Toolbox",
+    author="Radim Jäger",
+    author_email="rjaeger@sysnet.cz",
+    # url="https://github.com/vugtk21/RUIANToolbox",
+    url="https://github.com/SYSNET-CZ/ruian/tree/master/ruian-toolbox",
     requires=['psycopg2 (>=2.5)', 'web (>=0.37)'],
 
     # Name the folder where your packages live:
@@ -25,7 +26,7 @@ setup(
         "ruian_services",
         "ruian_services.services",
         "ruian_services.testing",
-        "sharedtools"
+        "shared_tools"
     ],
 
     # This is a list of files to install, and where (relative to the 'root' dir, where setup.py is.
@@ -35,19 +36,19 @@ setup(
     # This dict maps the package name =to=> directories
     # It says, package *needs* these files.
     package_data={
-        "RUIANDownloader": ["RUIANDownloader/*"],
-        "RUIANImporter": ["RUIANImporter/*"],
+        "downloader": ["downloader/*"],
+        "importer": ["importer/*"],
         "ruian_services": [
             "ruian_services/*",
             "ruian_services/HTML/*",
             "ruian_services/img/*",
             "ruian_services/soap/*"
         ],
-        "sharedtools": ["sharedtools/*"]
+        "shared_tools": ["shared_tools/*"]
     },
 
-    # 'ruian_toolbox.py' is in the root.
-    scripts=["ruian_toolbox.py"],
+    # 'ruian_toolbox_tk.py' is in the root.
+    scripts=["ruian_toolbox_tk.py"],
     long_description="""RÚIAN Toolbox je knihovna nástrojů a služeb, umožňující vytvářet a využívat kopie databáze Registru územní identifikace, adres a nemovitostí RÚIAN v prostředí sítě internetu, v prostředí počítačových sítí oddělených od internetu a v prostředí databází Client Server. Jednotlivé moduly knihovny pokrývají základní fáze životního cyklu repliky databáze RÚIAN s důrazem na využití adres, podporují automatické stahování dat ze serveru Veřejného dálkového přístupu (VDP), import stažených dat do geodatabáze a využívání adresních dat pomocí webových mapových služeb.
 Všechny moduly jsou dostupné jako spustitelné aplikace včetně zdrojového kódu, zveřejněného jako OpenSource tak, aby mohly být jednotlivé komponenty na všech úrovních plnohodnotně začleněny do širších informačních technologií podle potřeby.
 """

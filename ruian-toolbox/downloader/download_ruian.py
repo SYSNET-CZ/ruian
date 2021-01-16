@@ -6,6 +6,7 @@
 # Author:      Radek Augustýn
 # Copyright:   (c) VUGTK, v.v.i. 2014
 # License:     CC BY-SA 4.0
+# Contributor: Radim Jäger, 2021. Consolidated for Python 3
 # -------------------------------------------------------------------------------
 
 import datetime
@@ -13,9 +14,9 @@ import os
 import sys
 import urllib2
 import shared
-from htmllog import html_log
-from sharedtools import log, RUNS_ON_LINUX, extract_file_name, pathWithLastSlash, getFileExtension, safeMkDir, \
-    RUIANDownloadConfig, RUIANDownloadInfoFile, getDataDirFullPath
+from html_log import html_log
+from shared_tools import log, RUNS_ON_LINUX, extract_file_name2, path_with_last_slash, get_file_extension, safe_mk_dir, \
+    ruian_download_config, ruian_download_info_file, get_data_dir_full_path, Configuration
 
 __author__ = 'raugustyn'
 
@@ -27,7 +28,7 @@ Requires: Python 2.7.5 or later
 Usage: download_ruian.py [-DownloadFullDatabase {True | False}] [-DataDir data_dir] [-UncompressDownloadedFiles {True | False}][-help]')
 
        -DownloadFullDatabase        Set to True to download whole RUIAN state data
-       -DataDir                     Path to OSGeo4W.bat supproting VFR format, either relative or absolute
+       -DataDir                     Path to OSGeo4W.bat supporting VFR format, either relative or absolute
        -UncompressDownloadedFiles   Set to True to uncompress *.xml.gz to *.xml files after download
        -RunImporter                 Set to True to run RUIANImporter.bat after download
        -DownloadURLs                Semicolon separated URL masks for downloading state or update file list from VDP
@@ -35,13 +36,9 @@ Usage: download_ruian.py [-DownloadFullDatabase {True | False}] [-DataDir data_d
        -Help                        Print help
 """
 
-shared.setupPaths()
-
-
-# from sharedtools import pathWithLastSlash, RUIANDownloadConfig, RUIANDownloadInfoFile, safeMkDir, getFileExtension, extractFileName, getDataDirFullPath, RUNS_ON_LINUX
-
-infoFile = None
-config = None
+shared.setup_paths()
+info_file = None
+config = Configuration()  # type: Configuration
 
 
 def ___file_percentage_info(file_size, downloaded_size):
@@ -205,10 +202,10 @@ class RUIANDownloader:
     def get_update_list(self, from_date=""):
         assert isinstance(from_date, basestring)
 
-        log.logger.debug("RUIANDownloader.getUpdateList since %s", infoFile.validFor())
+        log.logger.debug("RUIANDownloader.getUpdateList since %s", info_file.validFor())
         self._full_download = False
-        if from_date == "" or infoFile.validFor() != "":
-            v = infoFile.validFor()
+        if from_date == "" or info_file.validFor() != "":
+            v = info_file.validFor()
             dateStr = v[8:10] + "." + v[5:7] + "." + v[0:4]
             firstPageURL = self.page_urls.split(";")[0]
             return self.get_list(get_update_url(firstPageURL, dateStr), True)
@@ -225,10 +222,10 @@ class RUIANDownloader:
             else:
                 header_text = "Stažení aktualizací k "
             v = str(datetime.datetime.now())
-            html_log.addHeader(header_text + " " + v[8:10] + "." + v[5:7] + "." + v[0:4])
+            html_log.add_header(header_text + " " + v[8:10] + "." + v[5:7] + "." + v[0:4])
 
         def add_table_header():
-            html_log.openTable()
+            html_log.open_table()
             html_log.htmlCode += "<tr><th align='left' valign='bottom'>Soubor</th><th>Staženo<br>[Bajtů]</th>"
             if config.uncompressDownloadedFiles:
                 html_log.htmlCode += "<th></th><th>Rozbaleno<br>[Bajtů]</th>"
@@ -268,23 +265,18 @@ class RUIANDownloader:
                 else:
                     tags = ''
                 alt_color = not alt_color
-                html_log.openTableRow(tags)
-
-                add_col(extract_file_name(info.file_name))
-
+                html_log.open_table_row(tags)
+                add_col(extract_file_name2(info.file_name))
                 add_col(int_to_str(info.compressed_file_size), 'align="right"')
-
                 if config.uncompressDownloadedFiles and info.file_size != 0:
                     add_col("->")
                 else:
                     add_col("")
-
                 if config.uncompressDownloadedFiles:
                     add_col(int_to_str(info.file_size), "align=right")
-
                 add_col(info.download_time, "align=right")
-                html_log.closeTableRow()
-            html_log.closeTable()
+                html_log.close_table_row()
+            html_log.close_table()
 
         html_log.clear()
         add_download_header()
@@ -313,14 +305,14 @@ class RUIANDownloader:
                 self.uncompress_file(fileName, not config.runImporter)
 
     def download_url_to_file(self, url, file_index, files_count):
-        """ Downloads to temporary file. If suceeded, then rename result. """
-        tmp_file_name = pathWithLastSlash(self.data_dir) + "tmpfile.bin"
+        """ Downloads to temporary file. If succeeded, then rename result. """
+        tmp_file_name = path_with_last_slash(self.data_dir) + "tmpfile.bin"
         log.logger.debug("RUIANDownloader.downloadURLtoFile")
         file_name = self.data_dir + url.split('/')[-1]
         start_time = datetime.datetime.now()
 
         if os.path.exists(file_name):
-            log.logger.info("File " + extract_file_name(file_name) + " is already downloaded, skipping it.")
+            log.logger.info("File " + extract_file_name2(file_name) + " is already downloaded, skipping it.")
             file_size = os.stat(file_name).st_size
             sys.stdout.write('.')
 
@@ -330,7 +322,7 @@ class RUIANDownloader:
             file_size = int(meta.getheaders("Content-Length")[0])
             log.logger.info(
                 "Downloading file %s [%d/%d %d Bytes]" % (
-                    extract_file_name(file_name), file_index, files_count, file_size))
+                    extract_file_name2(file_name), file_index, files_count, file_size))
             file_download_info(file_name, file_size)
             CHUNK = 1024 * 1024
             file_size_dl = 0
@@ -362,10 +354,11 @@ class RUIANDownloader:
         @return: Vrací název expandovaného souboru.
         """
         log.logger.debug("RUIANDownloader.uncompressFile")
-        ext = getFileExtension(file_name).lower()
+        ext = get_file_extension(file_name).lower()
         if ext == ".gz":
             out_file_name = file_name[:-len(ext)]
-            log.logger.info("Uncompressing " + extract_file_name(file_name) + " -> " + extract_file_name(out_file_name))
+            log.logger.info(
+                "Uncompressing " + extract_file_name2(file_name) + " -> " + extract_file_name2(out_file_name))
             import gzip
 
             bufferSize = 1024 * 1024 * 20
@@ -396,62 +389,63 @@ class RUIANDownloader:
             else:
                 return str(datetime.datetime.now().date()) == date_time_str.split(" ")[0]
 
-        if not infoFile.fullDownloadBroken:
-            if was_it_today(infoFile.lastFullDownload):
+        if not info_file.fullDownloadBroken:
+            if was_it_today(info_file.lastFullDownload):
                 log.logger.warning(
-                    "Process stopped! Nothing to download. Last full download was done Today " + infoFile.lastFullDownload)
+                    "Process stopped! Nothing to download. Last full download was done Today " + info_file.lastFullDownload)
                 return
-            elif not self._full_download and was_it_today(infoFile.lastPatchDownload):
+            elif not self._full_download and was_it_today(info_file.lastPatchDownload):
                 log.logger.warning(
-                    "Process stopped! Nothing to download. Last patch was downloaded Today " + infoFile.lastPatchDownload)
+                    "Process stopped! Nothing to download. Last patch was downloaded Today " + info_file.lastPatchDownload)
                 return
 
         # start_time = datetime.datetime.now()
 
         call_update = False
-        if self._full_download or infoFile.lastFullDownload == "":
+        if self._full_download or info_file.lastFullDownload == "":
             log.logger.info("Running in full mode")
-            if not infoFile.fullDownloadBroken:
+            if not info_file.fullDownloadBroken:
                 log.logger.info("Cleaning directory " + config.dataDir)
                 clean_directory(config.dataDir)
-                infoFile.fullDownloadBroken = True
-                infoFile.save()
+                info_file.fullDownloadBroken = True
+                info_file.save()
 
-            safeMkDir(os.path.join(config.dataDir, "data"))
-            safeMkDir(os.path.join(config.dataDir, "logs"))
+            safe_mk_dir(os.path.join(config.dataDir, "data"))
+            safe_mk_dir(os.path.join(config.dataDir, "logs"))
 
             list1 = self.get_full_set_list()
             d = datetime.date.today()
-            infoFile.lastFullDownload = '{:04d}'.format(d.year) + "-" + '{:02d}'.format(d.month) + "-01 14:07:13.084000"
-            infoFile.lastPatchDownload = ""
+            info_file.lastFullDownload = '{:04d}'.format(d.year) + "-" + '{:02d}'.format(
+                d.month) + "-01 14:07:13.084000"
+            info_file.lastPatchDownload = ""
             call_update = True
 
         else:
             log.logger.info("Running in update mode")
             list1 = self.get_update_list()
-            infoFile.lastPatchDownload = str(datetime.datetime.now())
+            info_file.lastPatchDownload = str(datetime.datetime.now())
 
         self.build_index_html()
 
-        if len(list1) > 0:  # stahujeme jedině když není seznam prázdný
+        if len(list1) > 0:  # stahujeme jedině, když není seznam prázdný
             self.download_url_list(list1)
-            infoFile.save()
+            info_file.save()
             self.save_file_list(list1)
         else:
             log.logger.warning("Nothing to download, list is empty.")
 
         self.build_index_html()
-        html_log.closeSection(config.dataDir + "Index.html")
+        html_log.close_section(config.dataDir + "Index.html")
 
-        infoFile.fullDownloadBroken = False
-        infoFile.save()
+        info_file.fullDownloadBroken = False
+        info_file.save()
 
         if call_update:
             self._full_download = False
             self.download()
 
     def save_file_list(self, file_list):
-        infoFile.numPatches = infoFile.numPatches + 1
+        info_file.numPatches = info_file.numPatches + 1
         v = str(datetime.datetime.now())
         fileName = v[0:4] + "." + v[5:7] + "." + v[8:10] + ".txt"
         if self._full_download:
@@ -493,33 +487,30 @@ def print_usage_info():
 
 
 if __name__ == '__main__':
-    config = RUIANDownloadConfig()
-    config.loadFromCommandLine(sys.argv, help_str)
+    config = ruian_download_config()
+    config.load_from_command_line(sys.argv, help_str)
 
-    log.createLogger(os.path.join(config.data_dir, "Download.log"))
-    infoFile = RUIANDownloadInfoFile()
-
-    #    if config.downloadFullDatabase:
-    #        log.clearLogFile()
+    log.create_logger(os.path.join(config.dataDir, "Download.log"))
+    info_file = ruian_download_info_file()
 
     log.logger.info("RUIAN Downloader")
     log.logger.info("#############################################")
-    log.logger.info("Data directory : %s", config.data_dir)
-    log.logger.info("Data directory full path : %s", getDataDirFullPath())
+    log.logger.info("Data directory : %s", config.dataDir)
+    log.logger.info("Data directory full path : %s", get_data_dir_full_path())
     log.logger.info("Download full database : %s", str(config.downloadFullDatabase))
     if not config.downloadFullDatabase:
-        log.logger.info("Last full download  : %s", infoFile.lastFullDownload)
-        log.logger.info("Last patch download : %s", infoFile.lastPatchDownload)
+        log.logger.info("Last full download  : %s", info_file.lastFullDownload)
+        log.logger.info("Last patch download : %s", info_file.lastPatchDownload)
     log.logger.info("---------------------------------------------")
 
-    downloader = RUIANDownloader(config.data_dir)
-    downloader._full_download = config.downloadFullDatabase or infoFile.fullDownloadBroken
+    downloader = RUIANDownloader(config.dataDir)
+    downloader._full_download = config.downloadFullDatabase or info_file.fullDownloadBroken
     downloader.download()
 
     log.logger.info("Download done.")
     if config.runImporter:
-        log.logger.info("Executing importer.importruian.doImport().")
-        from importer.import_ruian import doImport
+        log.logger.info("Executing importer.import_ruian.doImport().")
+        from importer.import_ruian import do_import
 
-        doImport(sys.argv)
+        do_import(sys.argv)
         log.logger.info("Done - importer.import_ruian.doImport().")

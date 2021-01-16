@@ -1,49 +1,52 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
-# Name:        sharetools
+# -------------------------------------------------------------------------------
+# Name:        base
 # Purpose:     Library shared procedures.
 #
 # Author:      Radek Augustýn
 # Copyright:   (c) VUGTK, v.v.i. 2014
 # License:     CC BY-SA 4.0
-#-------------------------------------------------------------------------------
+# Contributor: Radim Jäger, 2021. Consolidated for Python 3
+# -------------------------------------------------------------------------------
 
-import os, sys, codecs
-
+import codecs
+import os
+import sys
 
 RUNS_ON_WINDOWS = sys.platform.lower().startswith('win')
 RUNS_ON_LINUX = not RUNS_ON_WINDOWS
 COMMAND_FILE_EXTENSION = [".bat", ".sh"][RUNS_ON_LINUX]
 
 
-def extractFileName(fileName):
-    lastDel = fileName.rfind(os.sep)
-    return fileName[lastDel + 1:]
+def extract_file_name(file_name):
+    lastDel = file_name.rfind(os.sep)
+    return file_name[lastDel + 1:]
 
 
-def getFileExtension(fileName):
+def get_file_extension(file_name):
     """ Returns fileName extension part dot including (.txt,.png etc.)"""
-    return fileName[fileName.rfind("."):]
+    return file_name[file_name.rfind("."):]
 
 
-def pathWithLastSlash(path):
+def path_with_last_slash(path):
     assert isinstance(path, basestring)
 
-    path = normalizePathSep(path)
+    path = normalize_path_sep(path)
     if path != "" and path[len(path) - 1:] != os.sep:
         path = path + os.sep
 
     return path
 
 
-def createDirForFile(fileName):
-    safeMkDir(os.path.dirname(fileName))
+def create_dir_for_file(file_name):
+    safe_mk_dir(os.path.dirname(file_name))
 
 
-def safeMkDir(path):
+def safe_mk_dir(path):
     assert isinstance(path, basestring)
 
-    if path == "" or os.path.exists(path): return
+    if path == "" or os.path.exists(path):
+        return
 
     pathParts = path.split(os.sep)
     actPathList = []
@@ -53,42 +56,38 @@ def safeMkDir(path):
         if actPathStr and not os.path.exists(actPathStr):
             os.mkdir(actPathStr)
 
-def extract_file_name(path):
-    head, tail = os.path.split(path)
 
+def extract_file_name2(path):
+    head, tail = os.path.split(path)
     return tail
 
 
-def getPythonModules():
+def get_python_modules():
     return sys.modules.keys()
 
 
-def setupUTF():
+def setup_utf():
     import sys
     reload(sys)
     sys.setdefaultencoding('utf-8')
 
 
-def normalizePathSep(path):
+def normalize_path_sep(path):
     assert isinstance(path, basestring)
-
     path = path.replace("/", os.sep)
     path = path.replace("\\", os.sep)
-
     return path
 
 
-def getFileContent(fileName, charSet = "utf-8"):
-    assert isinstance(fileName, basestring)
-    assert isinstance(charSet, basestring)
+def get_file_content(file_name, char_set="utf-8"):
+    assert isinstance(file_name, basestring)
+    assert isinstance(char_set, basestring)
 
-    if os.path.exists(fileName):
-        inFile = codecs.open(fileName, "r", charSet)
+    if os.path.exists(file_name):
+        inFile = codecs.open(file_name, "r", char_set)
         result = inFile.read()
         inFile.close()
     else:
         result = ""
 
     return result
-
-

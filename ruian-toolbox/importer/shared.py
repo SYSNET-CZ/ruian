@@ -1,32 +1,34 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        shared
 # Purpose:
 #
 # Author:      Radek Augustýn
 # Copyright:   (c) VUGTK, v.v.i. 2014
 # License:     CC BY-SA 4.0
-#-------------------------------------------------------------------------------
+# Contributor: Radim Jäger, 2021. Consolidated for Python 3
+# -------------------------------------------------------------------------------
 
-firstCall = True
-RUIANToolBoxPath = ""
+first_call = True
+ruian_tool_box_path = ""
 
 
-def setupPaths(depth = 1):
+def setup_paths(depth=1):
     # ####################################
     # Setup path to RUIANToolbox
     # ####################################
-    global RUIANToolBoxPath
-    global firstCall
+    global ruian_tool_box_path
+    global first_call
 
-    if firstCall:
-        import os.path, sys
+    if first_call:
+        import os.path
+        import sys
 
-        pathParts = os.path.dirname(__file__).split(os.sep)
-        basePath = os.sep.join(pathParts[:len(pathParts) - depth])
+        path_parts = os.path.dirname(__file__).split(os.sep)
+        base_path = os.sep.join(path_parts[:len(path_parts) - depth])
 
-        RUIANToolBoxPath = basePath
+        ruian_tool_box_path = base_path
 
-        if not basePath in sys.path:
-            sys.path.append(basePath)
-        firstCall = False
+        if base_path not in sys.path:
+            sys.path.append(base_path)
+        first_call = False

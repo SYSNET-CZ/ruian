@@ -18,14 +18,14 @@ import nearbyaddresses
 import validateaddressid
 
 from HTTPShared import *
-import compileaddress
+import compile_address
 from config import SERVER_HTTP
 from config import getPortSpecification
 from config import SERVICES_WEB_PATH
 import config as configmodule
 from config import setupVariables
 
-import RUIANConnection
+import ruian_connection
 
 USE_DATA_LISTS = True
 SERVICES_PATH = '' # 'services'
@@ -234,7 +234,7 @@ class ServicesHTMLPageBuilder:
         result = result.replace("#SERVICES_URL_PATH#", configmodule.getServicesPath())
 
         if configmodule.config.ruianVersionDate == "":
-            versionDate = RUIANConnection.getRUIANVersionDate()
+            versionDate = ruian_connection.get_ruian_version_date()
             configmodule.config.databaseIsOK = not versionDate.upper().startswith("ERROR:")
             if versionDate.upper().startswith("ERROR:"):
                 versionDate = u"Nepřipojeno"
@@ -346,7 +346,7 @@ class ServicesHTMLPageBuilder:
 def createServices():
     geocode.createServiceHandlers()
     fulltextsearch.createServiceHandlers()
-    compileaddress.createServiceHandlers()
+    compile_address.createServiceHandlers()
     validate.createServiceHandlers()
     nearbyaddresses.createServiceHandlers()
     validateaddressid.createServiceHandlers()

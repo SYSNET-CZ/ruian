@@ -3,13 +3,13 @@
 # Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/importer/Aoache.Dockerfile -t sysnetcz/ruian-import .
 #
 # Do externiho volume:
-#       -   /opt/ruian/toolbox/sharedtools/DownloadedData
+#       -   /opt/ruian/toolbox/shared_tools/DownloadedData
 #       -   /opt/ruian/toolbox/DownloadRUIAN.cfg
 #       -   /opt/ruian/toolbox/ImportRUIAN.cfg
 #       -   /opt/ruian/toolbox/ruian_services.cfg
 # 
 # Spustit napriklad:
-#       docker run -d --name ruian-import --network ruian-net -v vfr-data:/opt/ruian/toolbox/sharedtools/DownloadedData -t sysnetcz/ruian-import
+#       docker run -d --name ruian-import --network ruian-net -v vfr-data:/opt/ruian/toolbox/shared_tools/DownloadedData -t sysnetcz/ruian-import
 #
 
 FROM sysnetcz/ruian-base:latest

@@ -2,7 +2,7 @@
 __author__ = 'Augustyn'
 
 import psycopg2
-from RUIANConnection import *
+from ruian_connection import *
 
 ITEM_TO_DBFIELDS = {
     "id": "gid",

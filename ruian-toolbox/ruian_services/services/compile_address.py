@@ -16,7 +16,7 @@ from HTTPShared import *
 import urllib
 import IDCheck
 import fulltextsearch
-import RUIANConnection
+import ruian_connection
 import validate
 import HTTPShared
 
@@ -42,7 +42,7 @@ def compileAddress(builder, street, houseNumber, recordNumber, orientationNumber
     dict = validate.buildValidateDict(street, houseNumber, recordNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, districtNumber)
 
     if doValidate or withRUIANId:
-        rows = RUIANConnection.getAddresses(dict)
+        rows = ruian_connection.get_addresses(dict)
 
         if len(rows) == 1:
             (houseNumber, orientationNumber, orientationNumberCharacter, zipCode, locality, localityPart, nazevMOP, street, typSO, ruianId) = rows[0]
@@ -161,8 +161,8 @@ def createServiceHandlers():
     )
 
 if __name__ == '__main__':
-    import sharedtools.base
-    sharedtools.base.setupUTF()
+    import shared_tools.base
+    shared_tools.base.setup_utf()
     #print compileAddress(None, u"Mrkvičkova", u"1370", "", "", "", "", "", "", "")
     print compileAddress(MimeBuilder("texttoonerow"), u"", u"14", "", "", "", "", "", "Stará Chodovská", "")
 
