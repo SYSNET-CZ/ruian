@@ -1,7 +1,7 @@
 # Zakladni GDAL-VFR Docker obraz pro dalsi pouziti. Vhodne pro import dat z RUIAN, sluzby nad importovanymi daty,
 # GeoDjango aplikace a dalsi GIS aplikace.
 #
-# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/base/Aoache.Dockerfile -t sysnetcz/ruian-base .
+# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/base/Aoache.Dockerfile.p3.2 -t sysnetcz/ruian-base .
 #
 
 FROM ubuntu:bionic

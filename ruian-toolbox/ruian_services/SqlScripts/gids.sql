@@ -1,8 +1,5 @@
 -- --------------------------------------------------
 -- Create table gids
 -- --------------------------------------------------
-drop table if exists gids;
-create table gids
-as
-select gid from address_points
-group by gid order by gid;
+DROP TABLE IF EXISTS gids;
+CREATE TABLE gids AS SELECT gid FROM address_points GROUP BY gid ORDER BY gid;

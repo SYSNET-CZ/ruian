@@ -1,0 +1,52 @@
+FROM python:3-buster
+
+LABEL maintainer="SYSNET s.r.o.<info@sysnet.cz>"
+
+ARG HOME_DIR=/opt/ruian
+ARG ENCODING=UTF-8
+ARG LANGUAGE_GROUP=cs
+ARG LANGUAGE=${LANGUAGE_GROUP}_CZ
+ARG LOCALE=${LANGUAGE}.${ENCODING}
+
+ENV  DEBIAN_FRONTEND noninteractive
+
+RUN apt-get clean && apt-get update && apt-get install -y apt-utils
+RUN apt-get install -y locales
+
+RUN locale-gen ${LOCALE}
+# RUN update-locale LANG=${LOCALE}
+RUN sed -i '/cs_CZ.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
+ENV LANG ${LOCALE}
+ENV LANGUAGE ${LANGUAGE}:${LANGUAGE_GROUP}
+ENV LC_ALL ${LOCALE}
+
+RUN apt-get install -y gdal-bin binutils libproj-dev
+RUN apt-get install -y libgdal-dev
+RUN apt-get install -y libpq-dev postgresql-client python-psycopg2
+
+RUN apt-get install -y python-numpy && apt-get install -y python-gdal
+
+WORKDIR ${HOME_DIR}
+COPY ./gdal-vfr ./vfr
+COPY ./ruian-toolbox ./toolbox
+COPY ./config ./config
+ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
+
+ENV CUZK_VYMENNYFORMAT=https://vdp.cuzk.cz/vdp/ruian/vymennyformat \
+    RUIAN_CONFIG_DIRECTORY=${HOME_DIR}/config \
+    RUIAN_DATA_DIRECTORY=${HOME_DIR}/data \
+    RUIAN_CONFIG_FILE_DOWNLOAD=DownloadRUIAN.cfg \
+    RUIAN_CONFIG_FILE_IMPORT=ImportRUIAN.cfg \
+    OS4GEO_PATH=${HOME_DIR}/vfr \
+    RUIAN_DB_NAME=ruian \
+    RUIAN_DB_SCHEMA=public \
+    RUIAN_DB_HOST=postgis \
+    RUIAN_DB_PORT=5432 \
+    RUIAN_DB_USER=docker \
+    RUIAN_DB_PASSWORD=docker \
+    RUIAN_SERVICE_TABLES=True \
+    RUIAN_AUTOCOMPLETE_TABLES=True
+
+RUN pip install -r ./toolbox/requirements.txt
+
+CMD ["/bin/bash"]

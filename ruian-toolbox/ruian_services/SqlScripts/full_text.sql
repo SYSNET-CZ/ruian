@@ -1,27 +1,26 @@
--- --------------------------------------------------
+-- ##################################################
 -- Create temporary table fulltext_a and fill it with partial data
--- --------------------------------------------------
-drop table if exists fulltext_a;
-create table fulltext_a
-as
-select gid, concat(nazev_obce, ',', nazev_casti_obce, ',', nazev_ulice) searchstr
-from address_points
-where nazev_obce <> nazev_casti_obce;
+-- ##################################################
+
+DROP TABLE IF EXISTS fulltext_a;
+CREATE TABLE fulltext_a AS
+SELECT gid, concat(nazev_obce, ',', nazev_casti_obce, ',', nazev_ulice) searchstr FROM address_points
+WHERE nazev_obce <> nazev_casti_obce;
 
 -- --------------------------------------------------
 -- add rest of values
 -- --------------------------------------------------
-insert into fulltext_a
-select gid, concat(nazev_obce, ',', nazev_ulice) searchstr
-from address_points
-where nazev_obce = nazev_casti_obce;
+INSERT INTO fulltext_a
+SELECT gid, concat(nazev_obce, ',', nazev_ulice) searchstr
+FROM address_points
+WHERE nazev_obce = nazev_casti_obce;
 
 -- --------------------------------------------------
 -- Create table fulltext
 -- --------------------------------------------------
 DROP TABLE IF EXISTS fulltext;
-create table fulltext
-as
+CREATE TABLE fulltext
+AS
 SELECT searchstr, array_agg(gid) gids
 FROM fulltext_a
 GROUP BY searchstr;
@@ -29,4 +28,4 @@ GROUP BY searchstr;
 -- --------------------------------------------------
 -- Drop temporary table fulltext_a
 -- --------------------------------------------------
-drop table fulltext_a;
+DROP TABLE fulltext_a;

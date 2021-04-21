@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 
 ###############################################################################
 #
@@ -25,11 +25,11 @@ from vfr4ogr.parse import parse_cmd
 from vfr4ogr.logger import check_log, VfrLogger
 from vfr4ogr.exception import VfrError, VfrErrorCmd
 
-def parse_args():
-    parser = argparse.ArgumentParser(prog="vfr2pg",
-                                     description="Imports VFR data to PostGIS database. "
-                                     "Requires GDAL library version 1.11 or later.")
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        prog="vfr2pg",
+        description="Imports VFR data to PostGIS database. Requires GDAL library version 1.11 or later.")
     parser.add_argument("-e", "--extended",
                         action='store_true',
                         help="Extended layer list statistics")
@@ -76,6 +76,7 @@ def parse_args():
 
     return parser.parse_args(), parser.print_help
 
+
 def main():
     # parse cmdline arguments
     options, usage = parse_args()
@@ -85,7 +86,7 @@ def main():
     except VfrErrorCmd as e:
         usage()
         sys.exit('ERROR: {}'.format(e))
-        
+
     # build datasource name
     odsn = None
     if options.dbname:
@@ -106,10 +107,10 @@ def main():
                    nogeomskip=options.nogeomskip, overwrite=options.overwrite)
     except VfrError as e:
         sys.exit('ERROR: {}'.format(e))
-    
+
     # write log process header
     pg.cmd_log(sys.argv)
-    
+
     if options.list:
         # list output database and exit
         pg.print_summary()
@@ -123,19 +124,20 @@ def main():
     if options.download:
         # download only requested, exiting
         return 0
-    
+
     # import input VFR files to PostGIS
     ipass = pg.run(options.append, options.extended)
-    
+
     # create indices for output tables
     pg.create_indices()
-    
+
     # print final summary
     if (ipass > 1 and options.fileschema is False) \
             or options.append:
         pg.print_summary()
-    
+
     return 0
+
 
 if __name__ == "__main__":
     atexit.register(check_log)
