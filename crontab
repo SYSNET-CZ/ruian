@@ -1,0 +1,3 @@
+# 10 */2 * * * root echo "Ještě žiju" >> /var/log/cron.log 2>&1
+*/5 * * * * root echo "Ještě žiju :-)" > /proc/1/fd/1 2>/proc/1/fd/2
+# Don't remove the empty line at the end of this file. It is required to run the cron job
