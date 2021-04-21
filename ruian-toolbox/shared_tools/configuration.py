@@ -328,7 +328,7 @@ def convert_ruian_download_cfg(config):
     config.runImporter = is_true(config.runImporter)
     config.evaluate_data_dir()
     config.ignoreHistoricalData = is_true(config.ignoreHistoricalData)
-    ruian_download_info_file().load(config.dataDir + "Info.txt")
+    ruian_download_info_file().load(os.path.join(config.dataDir, "info.txt"))
     pass
 
 
