@@ -1,8 +1,11 @@
 #!/bin/bash
 
-TOOLBOX_HOME="${RUIAN_TOOLBOX_HOME:-/opt/ruian/toolbox/downloader}"
+# Pokud nechcete cekat na odezvu, spustte skript na pozadi:
+# nohup download.sh &
+
+TOOLBOX_HOME="${RUIAN_TOOLBOX_HOME:-/opt/ruian/toolbox}"
 DOWNLOAD_HOME="${RUIAN_DOWNLOAD_HOME:-/opt/ruian/toolbox/downloader}"
-DOWNLOAD_DATA="${RUIAN_DOWNLOAD_DATA:-/opt/ruian/toolbox/data}"
+DOWNLOAD_DATA="${RUIAN_DOWNLOAD_DATA:-/opt/ruian/data}"
 
 LOG_DIR="${RUIAN_LOG:-/var/log/ruian}"
 
@@ -17,7 +20,7 @@ echo "do databaze, muze byt cely ukoncen az za nekolik hodin."
 echo "-------------------------------"
 echo "!!!Nezavirejte toto okno do ukonceni skriptu!!!"
 
-cd "$DOWNLOAD_HOME" || exit
+cd "$TOOLBOX_HOME" || exit
 export DOWNLOAD_DATA
 mkdir -p "$LOG_DIR"
 python download_ruian.py 2>>DownloadRUIAN.log 3>>DownloadRUIANErr.log

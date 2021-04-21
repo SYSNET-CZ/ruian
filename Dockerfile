@@ -58,6 +58,7 @@ ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}" \
     CUZK_VYMENNYFORMAT=https://vdp.cuzk.cz/vdp/ruian/vymennyformat \
     RUIAN_CONFIG_DIRECTORY=${HOME_DIR}/config \
     RUIAN_DATA_DIRECTORY=${HOME_DIR}/data \
+    RUIAN_DOWNLOAD_DIRECTORY=${HOME_DIR}/data \
     RUIAN_CONFIG_FILE_DOWNLOAD=DownloadRUIAN.cfg \
     RUIAN_CONFIG_FILE_IMPORT=ImportRUIAN.cfg \
     OS4GEO_PATH=${HOME_DIR}/vfr \
@@ -71,6 +72,11 @@ ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}" \
     RUIAN_AUTOCOMPLETE_TABLES=True
 
 RUN pip3 install -r ./toolbox/requirements.txt
+
+RUN chmod 755 ${HOME_DIR}/toolbox/download.sh
+RUN chmod 755 ${HOME_DIR}/toolbox/import.sh
+RUN chmod 755 ${HOME_DIR}/toolbox/toolbox.sh
+RUN chmod 755 ${HOME_DIR}/build.sh
 
 ADD crontab /etc/cron.d/ruian-cron
 RUN chmod 0644 /etc/cron.d/ruian-cron
