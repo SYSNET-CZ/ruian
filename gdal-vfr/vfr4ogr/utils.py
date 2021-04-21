@@ -8,11 +8,11 @@
 #
 ###############################################################################
 
-import os
-import sys
 import datetime
 import mimetypes
-from xml.dom.minidom import parse, parseString
+import os
+import sys
+from xml.dom.minidom import parseString
 
 try:
     from osgeo import gdal, ogr
@@ -22,24 +22,26 @@ except ImportError as e:
 from .exception import VfrError
 from .logger import VfrLogger
 
+
 def list_formats():
     """List supported OGR formats (write access).
     """
     cnt = ogr.GetDriverCount()
-    
-    formatsList = [] 
+
+    formats_list = []
     for i in range(cnt):
         driver = ogr.GetDriver(i)
         if not driver.TestCapability("CreateDataSource"):
             continue
-        driverName = driver.GetName()
-        if driverName == 'GML':
+        driver_name = driver.GetName()
+        if driver_name == 'GML':
             continue
-        
-        formatsList.append(driverName.replace(' ', '_'))
-    
-    for i in sorted(formatsList):
+
+        formats_list.append(driver_name.replace(' ', '_'))
+
+    for i in sorted(formats_list):
         print(i)
+
 
 def read_file(filename, date=None):
     """Read input file to get list of VFR files
@@ -55,7 +57,7 @@ def read_file(filename, date=None):
         raise VfrError('No input file specified')
     if not os.path.isfile(filename):
         raise VfrError("'%s' doesn't exists or it's not a file" % filename)
-    
+
     file_list = []
     mtype = mimetypes.guess_type(filename)[0]
     if mtype is None or ('xml' not in mtype and 'zip' not in mtype):
@@ -63,15 +65,16 @@ def read_file(filename, date=None):
             for line in fi.readlines():
                 line = line.strip()
                 if len(line) < 1 or line.startswith('#'):
-                    continue # skip empty or commented lines 
+                    continue  # skip empty or commented lines
                 if date and not line.startswith('20'):
                     file_list.append('{}_{}'.format(date, line))
                 else:
                     file_list.append(line)
     else:
         file_list.append(os.path.abspath(filename))
-    
+
     return file_list
+
 
 def parse_xml(filename):
     """Parse VFR (XML) file.
@@ -81,6 +84,8 @@ def parse_xml(filename):
     @return list of items
     """
     VfrLogger.msg("Comparing OGR layers and input XML file (may take some time)...", header=True)
+    ts = os.path.getctime(filename)
+    date = datetime.date.fromtimestamp(ts)
     if date > datetime.date(2018, 12, 7):
         from zipfile import ZipFile
         with ZipFile(filename) as zipfile:
@@ -101,8 +106,9 @@ def parse_xml(filename):
     item_list = []
     for item in data.childNodes:
         item_list.append(item.tagName.lstrip('vf:'))
-    
+
     return item_list
+
 
 def compare_list(list1, list2):
     """Compare list of XML nodes (see parse_xml_gz()).
@@ -113,12 +119,13 @@ def compare_list(list1, list2):
     for item in list1:
         if item not in list2:
             print("+ {}".format(item))
-    
+
     for item in list2:
         if item not in list1:
             print("- {}".format(item))
 
-def last_day_of_month(string = True):
+
+def last_day_of_month(string=True):
     """Get last day of current month.
 
     @param string: True to return string otherwise DateTime
@@ -131,7 +138,8 @@ def last_day_of_month(string = True):
         return date.strftime("%Y%m%d")
     return date
 
-def yesterday(string = True):
+
+def yesterday(string=True):
     """Get formated yesterday.
 
     @param string: True to return string otherwise DateTime
@@ -144,6 +152,7 @@ def yesterday(string = True):
         return day.strftime("%Y%m%d")
     return day
 
+
 def get_date_interval(date):
     """Get date internal.
 
@@ -154,7 +163,7 @@ def get_date_interval(date):
     dlist = []
     if ':' not in date:
         return [date]
-    
+
     if date.startswith(':'):
         sdate = last_day_of_month(string=False) + datetime.timedelta(days=1)
         edate = datetime.datetime.strptime(date[1:], "%Y%m%d").date()
@@ -162,19 +171,19 @@ def get_date_interval(date):
         sdate = datetime.datetime.strptime(date[:-1], "%Y%m%d").date()
         edate = yesterday(string=False)
     else:
-        s, e = date.split(':', 1)
+        s, ee = date.split(':', 1)
         sdate = datetime.datetime.strptime(s, "%Y%m%d").date()
-        edate = datetime.datetime.strptime(e, "%Y%m%d").date()
-    
+        edate = datetime.datetime.strptime(ee, "%Y%m%d").date()
+
     d = sdate
     delta = datetime.timedelta(days=1)
     while d <= edate:
         dlist.append(d.strftime("%Y%m%d"))
         d += delta
-    
+
     return dlist
+
 
 def extension():
     """Return valid file extension"""
     return 'zip' if datetime.date.today() > datetime.date(2018, 12, 7) else 'gz'
-

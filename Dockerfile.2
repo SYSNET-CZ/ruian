@@ -1,0 +1,84 @@
+FROM ubuntu:bionic
+
+# http://freegis.fsv.cvut.cz/gwiki/RUIAN_/_GDAL
+
+LABEL maintainer="SYSNET s.r.o.<info@sysnet.cz>"
+
+ARG HOME_DIR=/opt/ruian
+ARG ENCODING=UTF-8
+ARG LANGUAGE_GROUP=cs
+ARG LANGUAGE=${LANGUAGE_GROUP}_CZ
+ARG LOCALE=${LANGUAGE}.${ENCODING}
+
+RUN  export DEBIAN_FRONTEND=noninteractive
+ENV  DEBIAN_FRONTEND noninteractive
+RUN  dpkg-divert --local --rename --add /sbin/initctl
+
+RUN apt-get clean && apt-get update && apt-get install -y apt-utils
+RUN apt-get install -y locales
+RUN localedef -i ${LANGUAGE} -c -f ${ENCODING} -A /usr/share/locale/locale.alias ${LOCALE}
+RUN sed -i -e 's/# ${LOCALE} ${ENCODING}/${LOCALE} ${ENCODING}/' /etc/locale.gen && locale-gen
+ENV LANG=${LOCALE} \
+    LANGUAGE=${LANGUAGE}:${LANGUAGE_GROUP} \
+    LC_ALL=${LOCALE} \
+    LC_CTYPE="${LOCALE}" \
+    LC_NUMERIC="${LOCALE}" \
+    LC_TIME="${LOCALE}" \
+    LC_COLLATE="${LOCALE}" \
+    LC_MONETARY="${LOCALE}" \
+    LC_MESSAGES="${LOCALE}" \
+    LC_PAPER="${LOCALE}" \
+    LC_NAME="${LOCALE}" \
+    LC_ADDRESS="${LOCALE}" \
+    LC_TELEPHONE="${LOCALE}" \
+    LC_MEASUREMENT="${LOCALE}" \
+    LC_IDENTIFICATION="${LOCALE}"
+RUN locale-gen ${LOCALE} && update-locale LANG=${LOCALE}
+
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update && apt-get install -y iputils-ping \
+  && apt-get install -y python-pip python-dev gettext \
+  && cd /usr/local/bin \
+  && pip install --upgrade pip
+
+RUN apt-get install -y software-properties-common 
+RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update
+RUN add-apt-repository ppa:ubuntugis/ppa && apt-get update
+RUN apt-get install -y python3 python3-dev python3-pip
+
+RUN apt-get install -y gdal-bin binutils libproj-dev
+RUN apt-get install -y libgdal-dev
+RUN apt-get install -y libpq-dev postgresql-client python-psycopg2
+
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal \
+    C_INCLUDE_PATH=/usr/include/gdal
+
+RUN apt-get install -y python-numpy && apt-get install -y python-gdal
+
+
+WORKDIR ${HOME_DIR}
+COPY ./gdal-vfr ./vfr
+COPY ./ruian-toolbox ./toolbox
+COPY ./config ./config
+ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}"
+
+ENV CUZK_VYMENNYFORMAT=https://vdp.cuzk.cz/vdp/ruian/vymennyformat \
+    RUIAN_CONFIG_DIRECTORY=${HOME_DIR}/config \
+    RUIAN_DATA_DIRECTORY=${HOME_DIR}/data \
+    RUIAN_CONFIG_FILE_DOWNLOAD=DownloadRUIAN.cfg \
+    RUIAN_CONFIG_FILE_IMPORT=ImportRUIAN.cfg \
+    OS4GEO_PATH=${HOME_DIR}/vfr \
+    RUIAN_DB_NAME=ruian \
+    RUIAN_DB_SCHEMA=public \
+    RUIAN_DB_HOST=postgis \
+    RUIAN_DB_PORT=5432 \
+    RUIAN_DB_USER=docker \
+    RUIAN_DB_PASSWORD=docker \
+    RUIAN_SERVICE_TABLES=True \
+    RUIAN_AUTOCOMPLETE_TABLES=True
+
+RUN pip install -r ./toolbox/requirements.txt
+RUN pip3 install -r ./toolbox/requirements.txt
+
+CMD ["/bin/bash"]

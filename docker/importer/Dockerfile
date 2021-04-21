@@ -1,6 +1,6 @@
 # Docker obraz pro aplikaci importu VFR dat z RUIAN a ulozeni do PostGIS gatabaze.
 #
-# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/importer/Aoache.Dockerfile -t sysnetcz/ruian-import .
+# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/importer/Aoache.Dockerfile.p3.2 -t sysnetcz/ruian-import .
 #
 # Do externiho volume:
 #       -   /opt/ruian/toolbox/shared_tools/DownloadedData

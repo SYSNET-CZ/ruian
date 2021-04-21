@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 ###############################################################################
 #
 # VFR importer based on GDAL library
@@ -8,11 +10,43 @@
 #
 ###############################################################################
 
-import sys
+import psycopg2
 
-from .vfrogr import VfrOgr, Mode
-from .logger import VfrLogger
 from .exception import VfrError
+from .logger import VfrLogger
+from .vfrogr import VfrOgr
+
+
+def _get_dbname(dsn):
+    """Get dbname from datasource string
+
+    @param dsn: datasource name
+    """
+    try:
+        return dsn[dsn.find('dbname'):].split(' ')[0].strip().split('=')[1]
+    except Exception:
+        raise VfrError("Unable to get DB name")
+
+
+def _opendb(conn_string):
+    """Open DB connection.
+
+    @param conn_string: PG connection string
+    """
+    try:
+        conn = psycopg2.connect(conn_string)
+    except psycopg2.OperationalError as e:
+        raise VfrError("Unable to connect to DB: %s\nTry to define --user and/or --passwd" % e)
+
+    # check if PostGIS is installed
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT postgis_version()")
+    except (psycopg2.Error, psycopg2.OperationalError) as e:
+        raise VfrError("PostGIS doesn't seems to be installed.\n\n%s" % e)
+    cursor.close()
+    return conn
+
 
 class VfrPg(VfrOgr):
     def __init__(self, schema='public', schema_per_file=False, **kwargs):
@@ -23,60 +57,24 @@ class VfrPg(VfrOgr):
         @param args: other argumenets, see VfrOgr class for details
         """
         if kwargs['dsn']:
-            self._logFile = 'vfr2pg-{}'.format(self._get_dbname(kwargs['dsn']))
+            self._logFile = 'vfr2pg-{}'.format(_get_dbname(kwargs['dsn']))
         else:
             self._logFile = 'vfr2pg'
         VfrOgr.__init__(self, "PostgreSQL", **kwargs)
         self._schema = schema
         self._schema_per_file = schema_per_file
-        
+
         # build dsn string and options
         self._lco_options = []
         if self.odsn:
             # open connection to DB
-            self._conn = self._opendb(self.odsn[3:])
+            self._conn = _opendb(self.odsn[3:])
         else:
             self._conn = None
         self.schema_list = None
-                
+
     def __del__(self):
         self._conn.close()
-
-    def _get_dbname(self, dsn):
-        """Get dbname from datasource string
-
-        @param dsn: datasource name
-        """
-        try:
-            return dsn[dsn.find('dbname'):].split(' ')[0].strip().split('=')[1]
-        except:
-            raise VfrError("Unable to get DB name")
-        
-    def _opendb(self, conn_string):
-        """Open DB connection.
-
-        @param conn_string: PG connection string
-        """
-        try:
-            import psycopg2
-        except ImportError as e:
-            raise VfrError(e)
-            
-        try:
-            conn = psycopg2.connect(conn_string)
-        except psycopg2.OperationalError as e:
-            raise VfrError("Unable to connect to DB: %s\nTry to define --user and/or --passwd" % e)
-
-        # check if PostGIS is installed
-        cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT postgis_version()")
-        except StandardError as e:
-            raise VfrError("PostGIS doesn't seems to be installed.\n\n%s" % e)
-            
-        cursor.close()
-        
-        return conn
 
     def _create_schema(self, name):
         """Create output schema if not exists.
@@ -85,13 +83,13 @@ class VfrPg(VfrOgr):
         """
         cursor = self._conn.cursor()
         try:
-            cursor.execute("SELECT schema_name FROM information_schema.schemata "
-                            "WHERE schema_name = '%s'" % name)
+            cursor.execute(
+                "SELECT schema_name FROM information_schema.schemata WHERE schema_name = '{0}'".format(name))
             if not bool(cursor.fetchall()):
                 # cursor.execute("CREATE SCHEMA IF NOT EXISTS %s" % name)
                 cursor.execute("CREATE SCHEMA %s" % name)
                 self._conn.commit()
-        except StandardError as e:
+        except (psycopg2.Error, psycopg2.OperationalError) as e:
             raise VfrError("Unable to create schema %s: %s" % (name, e))
 
         cursor.close()
@@ -99,13 +97,14 @@ class VfrPg(VfrOgr):
     def _check_epsg(self):
         """Insert EPSG 5514 definition into output DB if not defined.
         """
+        self.epsg_checked = False
         if not self._conn:
             return
 
         cursor = self._conn.cursor()
         try:
             cursor.execute("SELECT srid FROM spatial_ref_sys WHERE srid = 5514")
-        except StandardError as e:
+        except (psycopg2.Error, psycopg2.OperationalError) as e:
             raise VfrError("PostGIS doesn't seems to be activated. %s" % e)
 
         epsg_exists = bool(cursor.fetchall())
@@ -114,8 +113,8 @@ class VfrPg(VfrOgr):
             cursor.execute(stmt)
             self._conn.commit()
             VfrLogger.msg("EPSG 5514 defined in DB", header=True)
-
         cursor.close()
+        self.epsg_checked = True
 
     def create_indices(self):
         """Create indices for output tables (gml_id).
@@ -129,7 +128,7 @@ class VfrPg(VfrOgr):
         if not self._layer_list:
             for idx in range(self._ods.GetLayerCount()):
                 self._layer_list.append(self._ods.GetLayer(idx).GetName())
-        
+
         column = "gml_id"
 
         cursor = self._conn.cursor()
@@ -145,24 +144,22 @@ class VfrPg(VfrOgr):
                     table = layer.lower()
 
                 indexname = "%s_%s_idx" % (table, column)
-                cursor.execute("SELECT COUNT(*) FROM pg_indexes WHERE "
-                               "tablename = '%s' and schemaname = '%s' and "
-                               "indexname = '%s'" % (table, schema, indexname))
+                cursor.execute(
+                    "SELECT COUNT(*) FROM {0} WHERE {1} = '{2}' and {3} = '{4}' and {5} = '{6}'".format(
+                        'pg_indexes', 'tablename', table, 'schemaname', schema, 'indexname', indexname))
                 if cursor.fetchall()[0][0] > 0:
-                    continue # indices for specified table already exists
+                    continue  # indices for specified table already exists
 
                 cursor.execute('BEGIN')
                 try:
-                    cursor.execute("CREATE INDEX %s ON %s.%s (%s)" % \
-                                       (indexname, schema, table, column))
+                    cursor.execute("CREATE INDEX {0} ON {1}.{2} ({3})".format(indexname, schema, table, column))
                     cursor.execute('COMMIT')
-                except StandardError as e:
+                except (psycopg2.Error, psycopg2.OperationalError) as e:
                     VfrLogger.warning("Unable to create index %s_%s: %s" % (table, column, e))
                     cursor.execute('ROLLBACK')
-
         cursor.close()
 
-    def _update_fid_seq(self, table, fid, column = 'ogc_fid'):
+    def _update_fid_seq(self, table, fid, column='ogc_fid'):
         """Update fid sequence.
 
         @param table: name of table
@@ -176,7 +173,7 @@ class VfrPg(VfrOgr):
         cursor = self._conn.cursor()
         try:
             cursor.execute("SELECT setval('%s_%s_seq', %d)" % (table, column, fid))
-        except StandardError as e:
+        except (psycopg2.Error, psycopg2.OperationalError) as e:
             VfrLogger.warning("Unable to update FID sequence for table '%s': %s" % (table, e))
 
         cursor.close()
@@ -196,16 +193,14 @@ class VfrPg(VfrOgr):
         cursor = self._conn.cursor()
         try:
             cursor.execute("SELECT max(%s) FROM %s" % (column, table))
-        except StandardError as e:
+        except (psycopg2.Error, psycopg2.OperationalError) as e:
             cursor.execute('ROLLBACK')
             cursor.close()
+            VfrLogger.error("Query cannot be executed: {}".format(e))
             return -1
-
         try:
             fid_max = int(cursor.fetchall()[0][0])
         except TypeError:
             fid_max = -1
-
         cursor.close()
-
         return fid_max

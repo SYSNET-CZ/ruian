@@ -9,8 +9,8 @@
 # Contributor: Radim Jäger, 2021. Consolidated for Python 3
 # -------------------------------------------------------------------------------
 import logging
-from base import create_dir_for_file
 
+from shared_tools import create_dir_for_file
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +43,10 @@ def create_logger(log_file_name):
 
         # Create and setup log file parameters
         create_dir_for_file(log_file_name)
-        fileHandler = logging.FileHandler(log_file_name)
+        file_handler = logging.FileHandler(log_file_name)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        fileHandler.setFormatter(formatter)
-        logger.addHandler(fileHandler)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
         print("\nLogger created")
     else:
         print("\nLogger already exists")
