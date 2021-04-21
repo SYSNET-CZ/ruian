@@ -171,7 +171,7 @@ def build_html_log():
                             import_types[download])
                         for detail in DETAILS:
                             detail_name = prefix + date_str + detail + LOG_EXTENSION
-                            file_name = data_path + detail_name
+                            file_name = os.path.join(data_path, detail_name)
                             caption = ""
                             if os.path.exists(file_name) and os.path.getsize(file_name) != 0:
                                 caption = "Info"
@@ -184,7 +184,7 @@ def build_html_log():
     imports_table += "</table>"
     log = log.replace(IMPORTS_TABLE_ID, imports_table)
 
-    out_f = codecs.open(data_path + "Import.html", "w", "utf-8")
+    out_f = codecs.open(os.path.join(data_path, 'Import.html'), 'w', 'utf-8')
     try:
         out_f.write(log)
     finally:

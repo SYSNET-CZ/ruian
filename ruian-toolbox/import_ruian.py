@@ -14,10 +14,11 @@ from subprocess import call
 
 import shared_tools.log as log
 from importer import build_html_log
+from ruian_services.services.geolocation import save_ruian_version_date_today
 from shared_tools import shared
-from shared_tools.configuration import ruian_importer_config, get_data_dir_full_path, Configuration
-from shared_tools.base import path_with_last_slash, extract_file_name2, \
+from shared_tools.base import extract_file_name2, \
     RUNS_ON_WINDOWS, RUNS_ON_LINUX, COMMAND_FILE_EXTENSION, setup_utf
+from shared_tools.configuration import ruian_importer_config, get_data_dir_full_path, Configuration
 
 shared.setup_paths()
 
@@ -80,35 +81,8 @@ def create_command_file(file_name_base, commands):
         os.chmod(file_name, 0o777)
 
     file_instance.close()
-    print("createCommandFile - END")
+    print("create_command_file - END")
     return file_name
-
-
-def join_paths(base_path, relative_path):
-    assert isinstance(base_path, (str, bytes))
-    assert isinstance(relative_path, (str, bytes))
-
-    base_path = base_path.replace("/", os.sep)
-    relative_path = relative_path.replace("/", os.sep)
-    if os.path.exists(relative_path):
-        return relative_path
-    else:
-        base_path_items = base_path.split(os.sep)
-        relative_path_items = relative_path.split(os.sep)
-        end_base_index = len(base_path_items)
-        start_relative = 0
-        for sub_path in relative_path_items:
-            if sub_path == "..":
-                end_base_index = end_base_index - 1
-                start_relative = start_relative + 1
-            elif sub_path == ".":
-                start_relative = start_relative + 1
-            else:
-                break
-
-        full_path = os.sep.join(
-            base_path_items[:end_base_index]) + os.sep + os.sep.join(relative_path_items[start_relative:])
-        return full_path
 
 
 def get_osgeo_path():
@@ -200,13 +174,13 @@ def delete_files_in_lists(path, file_lists, extension):
     assert isinstance(file_lists, list)
     assert isinstance(extension, (str, bytes))
 
-    path = path_with_last_slash(path)
+    # path = path_with_last_slash(path)
     for file_list in file_lists:
         list_file = open(file_list, "r")
         i = 0
         for line in list_file:
             i += 1
-            file_name = path + line.rstrip() + extension
+            file_name = os.path.join(path, line.rstrip() + extension)
             if os.path.exists(file_name):
                 os.remove(file_name)
             log.logger.debug(str(i), ":", file_name)
@@ -285,13 +259,13 @@ def update_database(update_file_name):
     print("updateDatabase - START (" + update_file_name + ")")
 
     def remove_data_files():
-        data_path = path_with_last_slash(os.path.split(update_file_name)[0])
+        data_path = os.path.split(update_file_name)[0]
         in_file = open(update_file_name, "r")
         try:
             for line in in_file:
                 file_name = os.path.basename(line)
-                if os.path.exists(data_path + file_name):
-                    os.remove(data_path + file_name)
+                if os.path.exists(os.path.join(data_path, file_name)):
+                    os.remove(os.path.join(data_path, file_name))
         finally:
             in_file.close()
         pass
@@ -345,7 +319,7 @@ def process_downloaded_directory(path):
     # log.logger.info("--------------------------------------")
     log.logger.info("Zdrojová data : " + path)
 
-    path = path_with_last_slash(path)
+    path = str(path)   # path_with_last_slash(path)
     state_file_name = ''
     updates_file_list = []
     # najit stavové soubory se seznamem ke zpracování
@@ -378,15 +352,6 @@ def process_downloaded_directory(path):
     log.logger.info("Načítání stažených souborů do databáze - hotovo.")
     print("processDownloadedDirectory - END")
     return result
-
-
-def get_full_path(config_file_name, path):
-    assert isinstance(config_file_name, (str, bytes))
-    assert isinstance(path, (str, bytes))
-
-    if not os.path.exists(path):
-        path = path_with_last_slash(config_file_name) + path
-    return path
 
 
 def do_import(argv):
@@ -422,7 +387,6 @@ def do_import(argv):
             build_services_tables()
             print("do_import buildServicesTables - END")
 
-    from ruian_services.services.ruian_connection import save_ruian_version_date_today
     print("call saveRUIANVersionDateToday() - START")
     save_ruian_version_date_today()
     print("call saveRUIANVersionDateToday() - END")
