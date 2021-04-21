@@ -72,4 +72,8 @@ ENV PATH="/opt/ruian/vfr:/opt/ruian/toolbox:${PATH}" \
 
 RUN pip3 install -r ./toolbox/requirements.txt
 
-ENTRYPOINT /bin/bash
+ADD crontab /etc/cron.d/ruian-cron
+RUN chmod 0644 /etc/cron.d/ruian-cron
+RUN touch /var/log/cron.log
+RUN apt-get update && apt-get -y install cron
+CMD ["cron", "-f"]
