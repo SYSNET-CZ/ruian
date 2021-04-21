@@ -76,7 +76,6 @@ RUN pip3 install -r ./toolbox/requirements.txt
 RUN chmod 755 ${HOME_DIR}/toolbox/download.sh
 RUN chmod 755 ${HOME_DIR}/toolbox/import.sh
 RUN chmod 755 ${HOME_DIR}/toolbox/toolbox.sh
-RUN chmod 755 ${HOME_DIR}/build.sh
 
 ADD crontab /etc/cron.d/ruian-cron
 RUN chmod 0644 /etc/cron.d/ruian-cron
