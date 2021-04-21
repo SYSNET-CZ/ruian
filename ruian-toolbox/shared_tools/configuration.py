@@ -37,8 +37,8 @@ URL_PLATNE_VSE_STAT_KOMPLET_ORIG = CUZK_VYMENNYFORMAT + \
                                    '/vyhledej?vf.pu=S&_vf.pu=on&_vf.pu=on&vf.cr=U&vf.up=ST&vf.ds=K&vf.vu=Z' + \
                                    '&_vf.vu=on&_vf.vu=on&vf.vu=H&_vf.vu=on&_vf.vu=on&search=Vyhledat'
 URL_PLATNE_VSE_OBEC_KOMPLET_CR = CUZK_VYMENNYFORMAT + \
-                                   '/vyhledej?vf.pu=S&_vf.pu=on&_vf.pu=on&vf.cr=U&vf.up=OB&vf.ds=K&vf.vu=Z' + \
-                                   '&_vf.vu=on&_vf.vu=on&_vf.vu=on&_vf.vu=on&vf.uo=A&search=Vyhledat'
+                                 '/vyhledej?vf.pu=S&_vf.pu=on&_vf.pu=on&vf.cr=U&vf.up=OB&vf.ds=K&vf.vu=Z' + \
+                                 '&_vf.vu=on&_vf.vu=on&_vf.vu=on&_vf.vu=on&vf.uo=A&search=Vyhledat'
 IMPORT_RUIAN_CFG = os.path.abspath(os.path.join(CONFIG_DIRECTORY, CONFIG_FILE_IMPORT))
 DOWNLOAD_RUIAN_CFG = os.path.abspath(os.path.join(CONFIG_DIRECTORY, CONFIG_FILE_DOWNLOAD))
 GIS_LAYERS = "AdresniMista,Ulice,StavebniObjekty,CastiObci,Obce,Mop,Momc"
@@ -88,7 +88,8 @@ def is_true(value):
 def get_sub_dir_path(sub_dir):
     path = os.path.dirname(__file__)
     master_path = os.path.split(path)[0]
-    return base.path_with_last_slash(os.path.join(master_path, sub_dir))
+    # return base.path_with_last_slash(os.path.join(master_path, sub_dir))
+    return os.path.join(master_path, sub_dir)
 
 
 def get_parent_path(module_file):
@@ -96,13 +97,15 @@ def get_parent_path(module_file):
         module_file = __file__
     path = os.path.dirname(module_file)
     parent_path = os.path.split(path)[0]
-    return base.path_with_last_slash(parent_path)
+    # return base.path_with_last_slash(parent_path)
+    return parent_path
 
 
 def get_master_path(module_file):
     path = get_parent_path(module_file)
     master_path = os.path.split(path)[0]
-    return base.path_with_last_slash(master_path)
+    # return base.path_with_last_slash(master_path)
+    return master_path
 
 
 class Configuration:
@@ -140,14 +143,14 @@ class Configuration:
             attrs = {}
         if base_path is not None and base_path != "":
             if not os.path.isabs(base_path):
-                self.base_path = base.path_with_last_slash(base_path)
+                self.base_path = base_path
                 self.base_path = os.path.abspath(self.base_path)
             if not os.path.exists(base_path):
                 log.logger.error("Config.__init__, cesta " + os.path.join(base_path, def_sub_dir) + " neexistuje.")
                 self.base_path = ''
         if config_path is not None and config_path != "":
             if not os.path.isabs(config_path):
-                self.config_path = base.path_with_last_slash(config_path)
+                # self.config_path = base.path_with_last_slash(config_path)
                 self.config_path = os.path.abspath(self.config_path)
             if not os.path.exists(config_path):
                 log.logger.error("Config.__init__, cesta " + config_path + " neexistuje.")
@@ -186,13 +189,13 @@ class Configuration:
 
     def evaluate_data_dir(self):
         if self.dataDir is not None:
-            self.dataDir = self.dataDir.replace("/", os.sep)
-            self.dataDir = self.dataDir.replace("\\", os.sep)
-            self.dataDir = base.path_with_last_slash(self.dataDir)
+            self.dataDir = self.dataDir.replace("/", os.sep).replace("\\", os.sep)
+            # self.dataDir = base.path_with_last_slash(self.dataDir)
             if not os.path.isabs(self.dataDir):
                 result = os.path.join(DATA_DIRECTORY, self.dataDir)
                 result = os.path.normpath(result)
-                self.dataDir = base.path_with_last_slash(result)
+                # self.dataDir = base.path_with_last_slash(result)
+                self.dataDir = result
 
     def load_file(self):
         if os.path.exists(self.fileName):
@@ -408,9 +411,9 @@ def ruian_importer_config():
 def get_ruian_toolbox_path():
     global x_ruian_toolbox_path
     if x_ruian_toolbox_path is None:
-        x_ruian_toolbox_path = base.path_with_last_slash(os.path.split(os.path.dirname(__file__))[0])
-        x_ruian_toolbox_path = x_ruian_toolbox_path.replace("/", os.sep)
-        x_ruian_toolbox_path = x_ruian_toolbox_path.replace("\\", os.sep)
+        # x_ruian_toolbox_path = base.path_with_last_slash(os.path.split(os.path.dirname(__file__))[0])
+        x_ruian_toolbox_path = os.path.split(os.path.dirname(__file__))[0]
+        # x_ruian_toolbox_path = x_ruian_toolbox_path.replace("/", os.sep).replace("\\", os.sep)
     return x_ruian_toolbox_path
 
 
@@ -441,14 +444,15 @@ def get_ruian_services_sql_scripts_path():
 def get_data_dir_full_path():
     result = ruian_download_config().dataDir
     if not os.path.isabs(result):
-        result = get_ruian_downloader_path() + result
+        result = os.path.join(BASE_DIR, result)
         result = os.path.normpath(result)
-        result = base.path_with_last_slash(result)
+        # result = base.path_with_last_slash(result)
     return result
 
 
 class RuianError(Exception):
     """Base class for other exceptions"""
+
     def __init__(self, module=None, message="Exception in RUIAN module"):
         self.module = module
         self.message = message
@@ -457,6 +461,7 @@ class RuianError(Exception):
 
 class DatabaseRuianError(RuianError):
     """ Exceprion caused by communication with PostGIS"""
+
     def __init__(self, module="PostGIS", message="Exception in RUIAN PostGIS module"):
         self.module = module
         self.message = message

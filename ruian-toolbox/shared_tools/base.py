@@ -28,12 +28,15 @@ def get_file_extension(file_name):
     return file_name[file_name.rfind('.'):]
 
 
+"""
+# removed 2021-04-21
 def path_with_last_slash(path):
     assert isinstance(path, (str, bytes))
     path = normalize_path_sep(path)
     if path != '' and path[len(path) - 1:] != os.sep:
         path = path + os.sep
     return path
+"""
 
 
 def create_dir_for_file(file_name):
@@ -78,12 +81,10 @@ def normalize_path_sep(path):
 def get_file_content(file_name, char_set='utf-8'):
     assert isinstance(file_name, (str, bytes))
     assert isinstance(char_set, (str, bytes))
-
     if os.path.exists(file_name):
         in_file = codecs.open(file_name, 'r', char_set)
         result = in_file.read()
         in_file.close()
     else:
         result = ''
-
     return result

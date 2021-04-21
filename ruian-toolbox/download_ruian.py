@@ -11,14 +11,14 @@
 
 import datetime
 import os
-import sys
 import socket
+import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 from downloader.html_log import html_log
-from shared_tools import log, RUNS_ON_LINUX, extract_file_name2, path_with_last_slash, get_file_extension, \
-    safe_mk_dir, ruian_download_config, ruian_download_info_file, get_data_dir_full_path, Configuration, shared
+from shared_tools import log, RUNS_ON_LINUX, extract_file_name2, get_file_extension, \
+    ruian_download_config, ruian_download_info_file, get_data_dir_full_path, Configuration, shared
 
 __author__ = 'raugustyn'
 
@@ -294,7 +294,7 @@ class RUIANDownloader:
         add_table_header()
         calc_sum_values()
         add_table_content()
-        html_log.save(config.dataDir + 'Index.html')
+        html_log.save(os.path.join(config.dataDir, 'Index.html'))
 
     def download_url_list(self, url_list):  # stahuje soubory  podle seznamu
         def build_download_infos_list():  # sestaví seznam ke stažení
@@ -325,7 +325,7 @@ class RUIANDownloader:
         """ Downloads to temporary file. If succeeded, then rename result. """
         try:
             tmp_file_name = os.path.join(self.data_dir, 'tmpfile.bin')
-            log.logger.info('download_ruian.download_url_to_file - data_dir: {}'.format(self.data_dir))
+            log.logger.debug('download_ruian.download_url_to_file - data_dir: {}'.format(self.data_dir))
             file_name = os.path.join(self.data_dir, str(url).split('/')[-1])
             file_name = consolidate_download_file_name(file_name)       # má odstranit apostrof na konci. Kde se vzal?
             start_time = datetime.datetime.now()
@@ -440,8 +440,8 @@ class RUIANDownloader:
                 self.info_file.fullDownloadBroken = True
                 self.info_file.save()
 
-            safe_mk_dir(os.path.join(config.dataDir, "data"))
-            safe_mk_dir(os.path.join(config.dataDir, "logs"))
+            # safe_mk_dir(os.path.join(config.dataDir, "data"))
+            # safe_mk_dir(os.path.join(config.dataDir, "logs"))
 
             list1 = self.get_full_set_list()
             d = datetime.date.today()
@@ -465,7 +465,7 @@ class RUIANDownloader:
             log.logger.warning("Nothing to download, list is empty.")
 
         self.build_index_html()
-        html_log.close_section(config.dataDir + "Index.html")
+        html_log.close_section(os.path.join(config.dataDir, 'Index.html'))
 
         self.info_file.fullDownloadBroken = False
         self.info_file.save()
@@ -482,7 +482,7 @@ class RUIANDownloader:
             file_name = "Download_" + file_name
         else:
             file_name = "Patch_" + file_name
-        out_file = open(config.dataDir + file_name, "w")
+        out_file = open(os.path.join(config.dataDir, file_name), "w")
         for line in file_list:
             out_file.write(line.decode("utf-8") + "\n")
             log.logger.info("save_file_list: {}".format(line.decode("utf-8")))
@@ -494,7 +494,7 @@ class RUIANDownloader:
         file_name = url.split('/')[-1]
         log.logger.info(file_name)
         u = urlopen(url)
-        f = open(self.target + file_name, 'wb')
+        f = open(os.path.join(self.target, file_name), 'wb')
         meta = u.info()
         file_size = int(meta.getheaders("Content-Length")[0])
         log.logger.info("Downloading %s Bytes: %s" % (file_name, file_size))
