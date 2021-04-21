@@ -1,0 +1,36 @@
+version: '3'
+
+# Úložiště
+volumes:
+  download:
+    driver: local
+
+# Sítě
+networks:
+  default:
+    external:
+      name: postgis_ruian-net
+
+# Služby
+services:
+  importer:
+    image: sysnetcz/ruian-sync:manual-build
+    container_name: ruian-import
+    hostname: import
+    domainname: ruian.docker
+    volumes:
+      - download:/opt/ruian/data
+      - backup-data:/backups
+      - ${PWD}/config:/opt/ruian/config
+    networks:
+      default:
+        aliases:
+          - importer
+          - ruian-import
+          - ruian-importer
+          - downloader
+          - ruian-download
+    environment:
+      - RUIAN_SERVICE_TABLES=True
+      - RUIAN_AUTOCOMPLETE_TABLES=True
+    restart: unless-stopped
