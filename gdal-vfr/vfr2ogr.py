@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 
 ###############################################################################
 #
@@ -20,10 +20,11 @@ from vfr4ogr.parse import parse_cmd
 from vfr4ogr.logger import check_log, VfrLogger
 from vfr4ogr.exception import VfrError, VfrErrorCmd
 
+
 def parse_args():
     parser = argparse.ArgumentParser(prog="vfr2ogr",
                                      description="Converts VFR file into desired GIS format supported by OGR library."
-                                     "Requires GDAL library version 1.11 or later.")
+                                                 "Requires GDAL library version 1.11 or later.")
 
     parser.add_argument("-f", "--formats",
                         action='store_true',
@@ -63,6 +64,7 @@ def parse_args():
 
     return parser.parse_args(), parser.print_help
 
+
 def main():
     # parse cmdline arguments
     options, usage = parse_args()
@@ -71,7 +73,7 @@ def main():
     except VfrErrorCmd as e:
         usage()
         sys.exit('ERROR: {}'.format(e))
-   
+
     # set up driver-specific options
     lco_options = []
     if options.format == 'SQLite':
@@ -87,7 +89,7 @@ def main():
 
     # write log process header
     ogr.cmd_log(sys.argv)
-    
+
     if options.list:
         # list output datasource and exit
         ogr.print_summary()
@@ -98,15 +100,16 @@ def main():
     if options.download:
         # download only requested, exiting
         return 0
-    
+
     # import VFR files
     ipass = ogr.run()
 
     # print final summary
     if ipass > 1 or options.append:
         ogr.print_summary()
-    
+
     return 0
+
 
 if __name__ == "__main__":
     atexit.register(check_log)

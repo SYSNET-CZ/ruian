@@ -1,2 +1,2 @@
-from base import *
-from configuration import *
+from shared_tools.base import *
+from shared_tools.configuration import *

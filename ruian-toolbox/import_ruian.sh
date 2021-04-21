@@ -4,7 +4,7 @@ TOOLBOX_HOME="${RUIAN_TOOLBOX_HOME:-/opt/ruian/toolbox/downloader}"
 IMPORT_HOME="${RUIAN_IMPORT_HOME:-/opt/ruian/toolbox/importer}"
 DOWNLOAD_DATA="${RUIAN_DOWNLOAD_DATA:-/opt/ruian/toolbox/data}"
 
-LOG_DIR="${RUIAN_LOG:-/var/log/ruian}"
+LOG_DIR="${RUIAN_LOG:-/vcat /etc/default/locale ar/log/ruian}"
 
 echo "Tento skript importuje data stazena z VDP do databaze."
 echo "------------------------------------------------------"

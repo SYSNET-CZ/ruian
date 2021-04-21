@@ -1,6 +1,6 @@
 # Docker obraz pro aplikaci webových sluzeb nad geodatabazi RUIAN ulozenou v postgis.
 #
-# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/services/Dockerfile -t sysnetcz/ruian-service .
+# Postavit z rootu projektu pomoci prikazu: docker build -f ${PWD}/docker/services/Dockerfile.p3.2 -t sysnetcz/ruian-service .
 #
 # Do externiho volume:
 #       -   /opt/ruian/toolbox/shared_tools/DownloadedData

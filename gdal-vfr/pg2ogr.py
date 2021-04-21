@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 
 ###############################################################################
 #
@@ -39,7 +39,7 @@ from getopt import GetoptError
 
 try:
     from osgeo import gdal, ogr
-except ImportError, e:
+except ImportError as e:
     sys.exit('ERROR: Import of ogr from osgeo failed. %s' % e)
 
 from vfr4ogr.ogr import check_ogr, list_layers

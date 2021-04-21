@@ -13,7 +13,7 @@ import os
 import sys
 import time
 
-import shared
+from shared_tools import shared
 from shared_tools.configuration import get_data_dir_full_path, ruian_importer_config
 
 help_str = """
@@ -46,10 +46,10 @@ def get_log_file_names(file_name):
     is_download = True
     for prefix in ["download_", "patch_"]:
         if file_name.startswith(prefix):
-            dateStr = file_name[len(prefix):]
-            if len(dateStr) == len(DATE_STR_EXAMPLE):
+            date_str = file_name[len(prefix):]
+            if len(date_str) == len(DATE_STR_EXAMPLE):
                 for detail in DETAILS:
-                    result.append("__" + prefix + dateStr + detail + LOG_EXTENSION)
+                    result.append("__" + prefix + date_str + detail + LOG_EXTENSION)
         is_download = False
     return result
 
@@ -138,8 +138,8 @@ LAYERS_DETAILS_ID = "#LAYERS_DETAILS#"
 
 
 def build_html_log():
-    IMPORT_TYPES = [u"Aktualizace", u"Stavová databáze"]
-    dataPath = get_data_dir_full_path()
+    import_types = [u"Aktualizace", u"Stavová databáze"]
+    data_path = get_data_dir_full_path()
     config = ruian_importer_config()
     log = html_template
 
@@ -157,7 +157,7 @@ def build_html_log():
     odd_row = False
     imports_table = u"<table>"
     imports_table += u'<tr valign="bottom"><th>Datum</th><th>Import</th><th>Konverze<br>VFR</th><th>Chyby</th></tr>'
-    for file_item in os.listdir(dataPath):
+    for file_item in os.listdir(data_path):
         file_name = file_item.lower()
         if file_name.endswith(TXT_EXTENSION):
             file_name = file_name[:len(file_name) - len(TXT_EXTENSION)]
@@ -168,10 +168,10 @@ def build_html_log():
                     if len(date_str) == len("2014.11.09"):
                         imports_table += '<tr %s><td>%s</td><td><a href="%s">%s</a></td>' % (
                             ["", 'class="altColor"'][int(odd_row)], date_str, prefix + date_str + TXT_EXTENSION,
-                            IMPORT_TYPES[download])
+                            import_types[download])
                         for detail in DETAILS:
                             detail_name = prefix + date_str + detail + LOG_EXTENSION
-                            file_name = dataPath + detail_name
+                            file_name = data_path + detail_name
                             caption = ""
                             if os.path.exists(file_name) and os.path.getsize(file_name) != 0:
                                 caption = "Info"
@@ -184,20 +184,20 @@ def build_html_log():
     imports_table += "</table>"
     log = log.replace(IMPORTS_TABLE_ID, imports_table)
 
-    outF = codecs.open(dataPath + "Import.html", "w", "utf-8")
+    out_f = codecs.open(data_path + "Import.html", "w", "utf-8")
     try:
-        outF.write(log)
+        out_f.write(log)
     finally:
-        outF.close()
+        out_f.close()
 
 
 def main(argv=None):
     from shared_tools.configuration import ruian_download_config
     config = ruian_download_config()
     config.load_from_command_line(argv, help_str)
-    print "Building import HTML Log file."
+    print("Building import HTML Log file.")
     build_html_log()
-    print "Done."
+    print("Done.")
 
 
 if __name__ == '__main__':

@@ -16,12 +16,9 @@ import datetime
 import copy
 import logging
 import re
-try:
-    # Python 2
-    from urllib2 import urlopen, HTTPError
-except ImportError:
-    # Python 3
-    from urllib.request import urlopen, HTTPError
+
+from urllib.error import HTTPError
+from urllib.request import urlopen
 import getpass
 from time import gmtime, strftime
 
@@ -32,25 +29,28 @@ except ImportError as e:
 
 from .exception import VfrError
 from .logger import VfrLogger
-from .utils import last_day_of_month, yesterday, parse_xml, extension
+from .utils import last_day_of_month, yesterday, parse_xml, extension, compare_list
+
 
 class Mode:
     """File open mode.
     """
-    write  = 0
+    write = 0
     append = 1
     change = 2
+
 
 class Action:
     """Feature action (changes only).
     """
-    add    = 0
+    add = 0
     update = 1
     delete = 2
 
+
 class VfrOgr:
-    def __init__(self, frmt, dsn, geom_name=None, layers=[], nogeomskip=False,
-                 overwrite=False, lco_options=[]):
+    def __init__(self, frmt, dsn, geom_name=None, layers=None, nogeomskip=False,
+                 overwrite=False, lco_options=None):
         """Class for importing VFK data into selected format using GDAL library.
 
         Raise VfrError on error.
@@ -64,6 +64,18 @@ class VfrOgr:
         @param lco_options: list of layer creation options (see GDAL library for details
         """
         # check for required GDAL version
+        self.geom_count_used = 0
+        self.modify_feature_used = 0
+        self.process_changes_used = 0
+        self.epsg_checked = False
+        self.err_msg = None
+        self._schema = None
+        self._schema_per_file = None
+        self.schema_list = []
+        if layers is None:
+            layers = []
+        if lco_options is None:
+            lco_options = []
         self._check_ogr()
 
         # read configuration
@@ -85,24 +97,24 @@ class VfrOgr:
             self._logFile = os.path.join(self._conf['LOG_DIR'], self._logFile)
             if not self._logFile.endswith('.log'):
                 self._logFile += '.log'
-            VfrLogger.addHandler(logging.FileHandler(self._logFile, delay = True))
+            VfrLogger.addHandler(logging.FileHandler(self._logFile, delay=True))
             VfrLogger.debug("log: {}".format(self._logFile))
-        
+
         self.frmt = frmt
         self._geom_name = geom_name
         self._overwrite = overwrite
         self._layer_list = layers
         self._nogeomskip = nogeomskip
         self._lco_options = lco_options
-        
+
         self._file_list = []
-        
+
         # input datasource
         self._idrv = ogr.GetDriverByName("GML")
         if self._idrv is None:
             raise VfrError("Unable to select GML driver")
         self._ids = None
-        
+
         # check output datasource
         self.odsn = dsn
         if not self.odsn:
@@ -113,7 +125,7 @@ class VfrOgr:
         self._odrv = ogr.GetDriverByName(frmt)
         if self._odrv is None:
             raise VfrError("Format '%s' is not supported" % frmt)
-        
+
         # try to open output datasource
         self._ods = self._odrv.Open(self.odsn, True)
         if self._ods is None:
@@ -127,7 +139,7 @@ class VfrOgr:
         except AttributeError:
             self._create_geom = False
         if not self._geom_name and \
-           not self._create_geom:
+                not self._create_geom:
             VfrLogger.warning("Driver '%s' doesn't support multiple geometry columns. "
                               "Only first will be used." % self._odrv.GetName())
 
@@ -151,11 +163,11 @@ class VfrOgr:
         version = gdal.__version__.split('.', 1)
         if not (int(version[0]) > 1 or int(version[1].split('.', 1)[0]) >= 11):
             raise VfrError("GDAL/OGR 1.11 or later required (%s found)" % '.'.join(version))
-        
+
         # check if OGR comes with GML driver
         if not ogr.GetDriverByName('GML'):
             raise VfrError('GML driver required')
-        
+
         gdal.PushErrorHandler(self._error_handler)
 
     def _error_handler(self, err_level, err_no, err_msg):
@@ -163,14 +175,17 @@ class VfrOgr:
 
         @param err_level: error level to be redirected
         @param err_no: unused 
-        @param error_msg: message
+        @param err_msg: message
         """
-        if err_level > gdal.CE_Warning:
-            raise RuntimeError(err_msg)
-        elif err_level == gdal.CE_Debug:
-            VfrLogger.debug(err_msg + os.linesep)
+        self.err_level = err_level
+        self.err_no = err_no
+        self.err_masg = err_msg
+        if self.err_level > gdal.CE_Warning:
+            raise RuntimeError(self.err_msg)
+        elif self.err_level == gdal.CE_Debug:
+            VfrLogger.debug(self.err_msg + os.linesep)
         else:
-            VfrLogger.warning(err_msg)
+            VfrLogger.warning(self.err_msg)
 
     def _read_conf(self):
         """Read configuration from file.
@@ -182,9 +197,7 @@ class VfrOgr:
             VfrError("Configuration file not found")
 
         # set default values
-        conf = { 'LOG_DIR' : '.',
-                 'DATA_DIR' : 'data' }
-
+        self.conf = {'LOG_DIR': '.', 'DATA_DIR': '.'}  # TODO datadir !!!
         # read configuration from file
         with open(cfile) as f:
             for line in f.readlines():
@@ -193,29 +206,27 @@ class VfrOgr:
                     continue
                 try:
                     key, value = line.split('=')
-                except ValueError as e:
+                except ValueError:
                     VfrError("Invalid configuration file on line: {}".format(line))
-
-                conf[key] = value
+                self.conf[key] = value
 
         # check also environmental variables
         if 'LOG_FILE' in os.environ:
-            conf['LOG_FILE'] = os.environ['LOG_FILE']
+            self.conf['LOG_FILE'] = os.environ['LOG_FILE']
         if 'DATA_DIR' in os.environ:
-            conf['DATA_DIR'] = os.environ['DATA_DIR']
+            self.conf['DATA_DIR'] = os.environ['DATA_DIR']
         if 'LOG_DIR' in os.environ:
-            conf['LOG_DIR'] = os.environ['LOG_DIR']
-        
+            self.conf['LOG_DIR'] = os.environ['LOG_DIR']
+
         # create data directory if not exists
-        if not os.path.isabs(conf['DATA_DIR']):
+        if not os.path.isabs(self.conf['DATA_DIR']):
             # convert path to absolute
-            conf['DATA_DIR'] = os.path.abspath(conf['DATA_DIR'])
-        
-        if not os.path.exists(conf['DATA_DIR']):
-            os.makedirs(conf['DATA_DIR'])
-            VfrLogger.debug("Creating <{}>".format(conf['DATA_DIR']))
-        
-        return conf
+            self.conf['DATA_DIR'] = os.path.abspath(self.conf['DATA_DIR'])
+
+        if not os.path.exists(self.conf['DATA_DIR']):
+            os.makedirs(self.conf['DATA_DIR'])
+            VfrLogger.debug("Creating <{}>".format(self.conf['DATA_DIR']))
+        return self.conf
 
     def _download_vfr(self, url):
         """Downloading VFR file to selected directory.
@@ -224,42 +235,43 @@ class VfrOgr:
 
         @param url: URL where file can be downloaded
         """
-        def download_file(self, url, local_file):
+
+        def download_file(url_value, local_file_value):
             success = True
-            with open(local_file, 'wb') as fd:
+            with open(local_file_value, 'wb') as fd:
                 try:
-                    fd.write(urlopen(url).read())
-                except HTTPError as e:
-                    if e.code == 404:
+                    fd.write(urlopen(url_value).read())
+                except HTTPError as e2:
+                    if e2.code == 404:
                         success = False
 
             if not success:
-                os.remove(local_file)
-                raise VfrError("File '%s' not found" % url)
-            
-        if os.path.exists(url): # single VFR file
+                os.remove(local_file_value)
+                raise VfrError("File '%s' not found" % url_value)
+
+        if os.path.exists(url):  # single VFR file
             return url
 
         local_file = os.path.join(self._conf['DATA_DIR'], os.path.basename(url))
         VfrLogger.debug('download_vfr(): local_file={}'.format(local_file))
-        if os.path.exists(local_file): # don't download file if found
+        if os.path.exists(local_file):  # don't download file if found
             return local_file
 
         VfrLogger.msg("Downloading {} ({})...".format(url, self._conf['DATA_DIR']),
                       header=True)
 
-        if not url.startswith('http://'):
-            url = 'http://vdp.cuzk.cz/vymenny_format/soucasna/' + url
+        if not url.startswith('https://'):
+            url = 'https://vdp.cuzk.cz/vymenny_format/soucasna/' + url
 
         # try more dates when downloading ST_U data (CUZK is
         # publishing data last day in the month, but there can be
         # exceptions due to technical reasons)
         ndays = 0 if 'ST_Z' in url else 3
         old_date = last_day_of_month(string=False)
-        for day in range(1, ndays+2):
+        for day in range(1, ndays + 2):
             try:
-                download_file(self, url, local_file)
-            except VfrError as e:
+                download_file(url, local_file)
+            except VfrError as e1:
                 new_date = old_date + datetime.timedelta(days=1)
                 url = url.replace(
                     old_date.strftime("%Y%m%d"), new_date.strftime("%Y%m%d")
@@ -268,10 +280,10 @@ class VfrOgr:
                     old_date.strftime("%Y%m%d"), new_date.strftime("%Y%m%d")
                 )
                 if day < ndays:
-                    VfrLogger.error('{}'.format(e))
+                    VfrLogger.error('{}'.format(e1))
                     VfrLogger.info("New attempt: '{}'...{}".format(url, os.linesep))
                 else:
-                    raise VfrError('{}'.format(e))
+                    raise VfrError('{}'.format(e1))
 
         return local_file
 
@@ -280,12 +292,17 @@ class VfrOgr:
 
         @return string
         """
-        VfrLogger.msg('cmd={}\npid={}\nuser={}\ndate={}\ncwd={}\ndata={}\nlog={}'.format(' '.join(sys.argv),
-                                                                                         os.getpid(),
-                                                                                         getpass.getuser(),
-                                                                                         strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-                                                                                         os.getcwd(), self._conf['DATA_DIR'], self._logFile),
-                      header=True, style='#')
+        VfrLogger.msg(
+            'cmd={}\npid={}\nuser={}\ndate={}\ncwd={}\ndata={}\nlog={}'.format(
+                ' '.join(cmd),
+                os.getpid(),
+                getpass.getuser(),
+                strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+                os.getcwd(),
+                self._conf['DATA_DIR'],
+                self._logFile),
+            header=True,
+            style='#')
 
     def reset(self):
         """Reset file list"""
@@ -300,23 +317,23 @@ class VfrOgr:
         @return list of VFR files
         """
         VfrLogger.msg("%d VFR file(s) will be processed..." % len(file_list), header=True)
-        
-        base_url = "http://vdp.cuzk.cz/vymenny_format/"
+
+        base_url = "https://vdp.cuzk.cz/vymenny_format/"
         for line in file_list:
             if not os.path.isabs(line):
                 file_path = os.path.abspath(os.path.join(self._conf['DATA_DIR'], line))
             else:
                 file_path = line
             if os.path.exists(file_path):
-                ftype, fencoding =  mimetypes.guess_type(file_path)
-                if ((ftype in ('application/xml', 'text/xml') and fencoding == 'gzip') or \
-                    (ftype in ('application/zip', 'application/x-zip-compressed') and fencoding is None)):
+                ftype, fencoding = mimetypes.guess_type(file_path)
+                if ((ftype in ('application/xml', 'text/xml') and fencoding == 'gzip') or
+                        (ftype in ('application/zip', 'application/x-zip-compressed') and fencoding is None)):
                     # downloaded VFR file, skip
                     self._file_list.append(file_path)
                 else:
                     VfrLogger.warning("File <{}>: unsupported minetype '{}'".format(line, ftype))
             else:
-                if not line.startswith('http://') and \
+                if not line.startswith('https://') and \
                         not line.startswith('20'):
                     # determine date if missing
                     if not force_date:
@@ -328,14 +345,11 @@ class VfrOgr:
                         date = force_date
                     line = date + '_' + line
                 else:
-                    reg = re.match('(.*)(\d{8})_(.*)', line)
+                    reg = re.match('(.*)(\\d{8})_(.*)', line)
                     if not reg:
                         raise VfrError("Unable to determine date")
-                    date = datetime.datetime.date(
-                        datetime.datetime.strptime(reg.group(2), "%Y%m%d")
-                    )
-
-                if not line.startswith('http'):
+                    # date = datetime.datetime.date(datetime.datetime.strptime(reg.group(2), "%Y%m%d"))
+                if not line.startswith('https'):
                     # add base url if missing
                     base_url_line = base_url
                     if 'ST_UVOH' not in line:
@@ -344,15 +358,13 @@ class VfrOgr:
                         base_url_line += "specialni/"
 
                     line = base_url_line + line
-
-
                 ext = '.xml.{}'.format(extension())
                 if not line.endswith(ext):
                     # add extension if missing
                     line += ext
 
                 self._file_list.append(self._download_vfr(line))
-               
+
     def print_summary(self):
         """Print summary for multiple file input.
         """
@@ -363,17 +375,13 @@ class VfrOgr:
         if not layer_list:
             for idx in range(self._ods.GetLayerCount()):
                 layer_list.append(self._ods.GetLayer(idx).GetName())
-        
         VfrLogger.msg("Summary", header=True)
         for layer_name in layer_list:
             layer = self._ods.GetLayerByName(layer_name)
             if not layer:
                 continue
-
-            VfrLogger.msg("Layer            %-20s ... %10d features\n" % \
-                             (layer_name, layer.GetFeatureCount()))
-        
-        nsec = time.time() - stime    
+            VfrLogger.msg("Layer            %-20s ... %10d features\n" % (layer_name, layer.GetFeatureCount()))
+        nsec = time.time() - stime
         etime = str(datetime.timedelta(seconds=nsec))
         VfrLogger.msg("Time elapsed: %s" % str(etime), header=True)
 
@@ -392,8 +400,8 @@ class VfrOgr:
             raise VfrError("Unable to open file '%s'. Skipping.\n" % filename)
 
         return self._ids
-    
-    def _list_layers(self, extended = False, fd = sys.stdout):
+
+    def _list_layers(self, extended=False, fd=sys.stdout):
         """List OGR layers of input VFR file.
 
         @param extended: True for extended output
@@ -405,16 +413,16 @@ class VfrOgr:
         layer_list = list()
         for i in range(nlayers):
             layer = self._ids.GetLayer(i)
-            layerName = layer.GetName()
-            layer_list.append(layerName)
+            layer_name = layer.GetName()
+            layer_list.append(layer_name)
 
             if not fd:
                 continue
 
             if extended:
                 fd.write('-' * 80 + os.linesep)
-            featureCount = layer.GetFeatureCount()
-            fd.write("Number of features in %-20s: %d\n" % (layerName, featureCount))
+            feature_count = layer.GetFeatureCount()
+            fd.write("Number of features in %-20s: %d\n" % (layer_name, feature_count))
             if extended:
                 for field, count in self._get_geom_count(layer):
                     fd.write("%41s : %d\n" % (field, count))
@@ -424,7 +432,7 @@ class VfrOgr:
 
         return layer_list
 
-    def _convert_vfr(self, mode = Mode.write, schema=None):
+    def _convert_vfr(self, mode=Mode.write, schema=None):
         """Write features from input (VFR) datasource to output datasource
 
         @param: file mode (see class Mode for details
@@ -437,14 +445,14 @@ class VfrOgr:
             for layer in ("ulice", "parcely", "stavebniobjekty", "adresnimista"):
                 if self._ods.GetLayerByName(layer) is not None:
                     self._ods.DeleteLayer(layer)
-        
+
         # process features marked for deletion first
-        dlist = None # statistics
+        dlist = None  # statistics
         if mode == Mode.change:
-            dlayer = self._ids.GetLayerByName('ZaniklePrvky')
-            if dlayer:
-                dlist = self._process_deleted_features(dlayer)
-        
+            self.dlayer = self._ids.GetLayerByName('ZaniklePrvky')
+            if self.dlayer:
+                dlist = self._process_deleted_features(self.dlayer)
+
         # process layers
         start = time.time()
         nlayers = self._ids.GetLayerCount()
@@ -513,16 +521,16 @@ class VfrOgr:
 
             # pre-process changes
             if mode == Mode.change:
-                change_list = self._process_changes(layer, olayer)
-                if dlist and layer_name in dlist: # add features to be deleted
-                    change_list.update(dlist[layer_name])
+                self.change_list = self._process_changes(layer, olayer)
+                if dlist and layer_name in dlist:  # add features to be deleted
+                    self.change_list.update(dlist[layer_name])
 
             ifeat = n_nogeom = 0
             geom_idx = -1
 
             # make sure that PG sequence is up-to-date (import for fid == -1)
             fid = -1
-            if hasattr(self, "_conn"): # do it better?
+            if hasattr(self, "_conn"):  # do it better?
                 if schema:
                     table_name = '%s.%s' % (schema, layer_name_lower)
                 else:
@@ -530,7 +538,7 @@ class VfrOgr:
                 fid = self._get_fid_max(table_name)
                 if fid > 0:
                     self._update_fid_seq(table_name, fid)
-            
+
             if fid is None or fid == -1:
                 fid = olayer.GetFeatureCount()
 
@@ -554,7 +562,7 @@ class VfrOgr:
                 # check for changes first (delete/update/add)
                 if mode == Mode.change:
                     c_fid = feature.GetFID()
-                    action, o_fid = change_list.get(c_fid, (None, None))
+                    action, o_fid = self.change_list.get(c_fid, (None, None))
                     if action is None:
                         raise VfrError("Layer %s: unable to find feature %d" % (layer_name, c_fid))
 
@@ -614,15 +622,14 @@ class VfrOgr:
             VfrLogger.msg(" %10d features" % ifeat)
             if mode == Mode.change:
                 n_added = n_updated = n_deleted = 0
-                for action, unused in change_list.itervalues():
+                for action, unused in iter(self.change_list.values()):
                     if action == Action.update:
                         n_updated += 1
                     elif action == Action.add:
                         n_added += 1
-                    else: # Action.delete:
+                    else:  # Action.delete:
                         n_deleted += 1
-                VfrLogger.msg(" (%5d added, %5d updated, %5d deleted)" % \
-                                     (n_added, n_updated, n_deleted))
+                VfrLogger.msg(" (%5d added, %5d updated, %5d deleted)" % (n_added, n_updated, n_deleted))
             else:
                 VfrLogger.msg(" added")
                 if n_nogeom > 0:
@@ -642,7 +649,7 @@ class VfrOgr:
                     else:
                         table_name = layer_name_lower
                     self._update_fid_seq(table_name, fid)
-        
+
         # final statistics (time elapsed)
         VfrLogger.msg("Time elapsed: %d sec" % (time.time() - start), header=True)
 
@@ -657,28 +664,28 @@ class VfrOgr:
         for opt in self._lco_options:
             if opt.startswith(name):
                 del self._lco_options[i]
-                return 
+                return
             i += 1
 
-    def _delete_layer(self, layerName):
+    def _delete_layer(self, layer_name):
         """Delete specified layer from output datasource
 
-        @param layerName: name of layer to be deleted
+        @param layer_name: name of layer to be deleted
 
         @return True if deleted other False
         """
-        nlayersOut = self._ods.GetLayerCount()
-        for iLayerOut in range(nlayersOut): # do it better
-            if self._ods.GetLayer(iLayerOut).GetName() == layerName:
+        nlayers_out = self._ods.GetLayerCount()
+        for iLayerOut in range(nlayers_out):  # do it better
+            if self._ods.GetLayer(iLayerOut).GetName() == layer_name:
                 self._ods.DeleteLayer(iLayerOut)
                 return True
 
         return False
 
-    def _create_layer(self, layerName, ilayer, force_geom_name=None):
+    def _create_layer(self, layer_name, ilayer, force_geom_name=None):
         """Create new layer in output datasource.
 
-        @param layerName: name of layer to be created
+        @param layer_name: name of layer to be created
         @param ilayer: layer instance (input datasource)
 
         @return layer instance (output datasource)
@@ -706,11 +713,11 @@ class VfrOgr:
             geom_type = ogr.wkbNone
 
         # create new layer
-        olayer = self._ods.CreateLayer(layerName, ilayer.GetSpatialRef(),
+        olayer = self._ods.CreateLayer(layer_name, ilayer.GetSpatialRef(),
                                        geom_type, self._lco_options)
 
         if not olayer:
-            raise VfrError("Unable to create layer '%'" % layerName)
+            raise VfrError("Unable to create layer '%s'" % layer_name)
 
         # create attributes                     
         feat_defn = ilayer.GetLayerDefn()
@@ -732,9 +739,9 @@ class VfrOgr:
         if not geom_name and \
                 olayer.TestCapability(ogr.OLCCreateGeomField):
             for i in range(feat_defn.GetGeomFieldCount()):
-                geom_defn = feat_defn.GetGeomFieldDefn(i) 
+                geom_defn = feat_defn.GetGeomFieldDefn(i)
                 if geom_name and \
-                   geom_defn.GetName() != geom_name:
+                        geom_defn.GetName() != geom_name:
                     continue
                 olayer.CreateGeomField(feat_defn.GetGeomFieldDefn(i))
 
@@ -756,7 +763,7 @@ class VfrOgr:
             for i in range(len(geom_list)):
                 if feature.GetGeomFieldRef(i):
                     geom_list[i][1] += 1
-
+        self.geom_count_used += 1
         return geom_list
 
     def _modify_feature(self, feature, geom_idx, ofeature, suppress=True):
@@ -775,9 +782,8 @@ class VfrOgr:
             else:
                 ofeature.SetGeometry(None)
                 if not suppress:
-                    VfrLogger.warning("Feature %d has no geometry (geometry column: %d)" % \
-                                      (feature.GetFID(), geom_idx))
-                    
+                    VfrLogger.warning("Feature %d has no geometry (geometry column: %d)" % (feature.GetFID(), geom_idx))
+        self.modify_feature_used += 1
         return geom_idx
 
     def _process_changes(self, ilayer, olayer, column='gml_id'):
@@ -807,13 +813,12 @@ class VfrOgr:
             n_feat = len(found)
 
             changes_list[ifeature.GetFID()] = (Action.update, found[0]) if n_feat > 0 \
-                                              else (Action.add, -1)
+                else (Action.add, -1)
 
             if n_feat > 1:
                 # TODO: how to handle correctly?
                 VfrLogger.warning("Layer '%s': %d features '%s' found. "
-                                  "Duplicated features will be deleted." % \
-                            (olayer.GetName(), n_feat, fcode))
+                                  "Duplicated features will be deleted." % (olayer.GetName(), n_feat, fcode))
                 for fid in found[1:]:
                     # delete duplicates
                     olayer.DeleteFeature(fid)
@@ -822,7 +827,7 @@ class VfrOgr:
 
         # unset attribute filter
         olayer.SetAttributeFilter(None)
-
+        self.process_changes_used += 1
         return changes_list
 
     def _process_deleted_features(self, layer):
@@ -834,28 +839,28 @@ class VfrOgr:
         fid)
         """
         lcode2lname = {
-            'ST' : 'Staty',
-            'RS' : 'RegionySoudrznosti',
-            'KR' : 'Kraje',
-            'VC' : 'Vusc',
-            'OK' : 'Okresy',
-            'OP' : 'Orp',
-            'PU' : 'Pou',
-            'OB' : 'Obce',
-            'SP' : 'SpravniObvody',
-            'MP' : 'Mop',
-            'MC' : 'Momc',
-            'CO' : 'CastiObci',
-            'KU' : 'KatastralniUzemi',
-            'ZJ' : 'Zsj',
-            'UL' : 'Ulice',
-            'PA' : 'Parcely',
-            'SO' : 'StavebniObjekty',
-            'AD' : 'AdresniMista',
-            }
+            'ST': 'Staty',
+            'RS': 'RegionySoudrznosti',
+            'KR': 'Kraje',
+            'VC': 'Vusc',
+            'OK': 'Okresy',
+            'OP': 'Orp',
+            'PU': 'Pou',
+            'OB': 'Obce',
+            'SP': 'SpravniObvody',
+            'MP': 'Mop',
+            'MC': 'Momc',
+            'CO': 'CastiObci',
+            'KU': 'KatastralniUzemi',
+            'ZJ': 'Zsj',
+            'UL': 'Ulice',
+            'PA': 'Parcely',
+            'SO': 'StavebniObjekty',
+            'AD': 'AdresniMista',
+        }
         column = 'gml_id'
         dlist = {}
-        for layer_name in lcode2lname.itervalues():
+        for layer_name in iter(lcode2lname.values()):
             dlist[layer_name] = {}
 
         layer.ResetReading()
@@ -874,26 +879,25 @@ class VfrOgr:
                 continue
             fcode = "%s.%s" % (lcode, feature.GetField("PrvekId"))
             if not layer_previous or layer_previous != layer_name:
-                dlayer = self._ods.GetLayerByName('%s' % layer_name)
-                if dlayer is None:
+                self.dlayer = self._ods.GetLayerByName('%s' % layer_name)
+                if self.dlayer is None:
                     VfrLogger.error("Layer '{}' not found".format(layer_name))
                     feature = layer.GetNextFeature()
                     continue
 
             # find features to be deleted (collect their FIDs)
             n_feat = 0
-            dlayer.SetAttributeFilter("%s = '%s'" % (column, fcode))
-            for dfeature in dlayer:
+            self.dlayer.SetAttributeFilter("%s = '%s'" % (column, fcode))
+            for dfeature in self.dlayer:
                 fid = dfeature.GetFID()
                 dlist[layer_name][fid] = (Action.delete, fid)
                 n_feat += 1
-            dlayer.SetAttributeFilter(None)
+            self.dlayer.SetAttributeFilter(None)
 
             # check for consistency (one feature should be found)
             if n_feat == 0:
                 VfrLogger.warning("Layer '%s': no feature '%s' found. "
-                                  "Nothing to delete." % \
-                            (layer_name, fcode))
+                                  "Nothing to delete." % (layer_name, fcode))
             elif n_feat > 1:
                 VfrLogger.warning("Layer '%s': %d features '%s' found. "
                                   "All of them will be deleted." % (layer_name, n_feat, fcode))
@@ -913,49 +917,48 @@ class VfrOgr:
         @return number of passes
         """
         ipass = 0
-        stime = time.time()
+        # stime = time.time()
         layer_list = copy.deepcopy(self._layer_list)
-        
-        pg = hasattr(self, "_conn") # PG is output datasource
+
+        pg = hasattr(self, "_conn")  # PG is output datasource
         if pg:
-            self.schema_list = []
-            epsg_checked = False
-        
+            self.epsg_checked = False
+
+        odsn_reset = None
         for fname in self._file_list:
-            VfrLogger.msg("Processing %s (%d out of %d)..." % \
-                          (fname, ipass+1, len(self._file_list)), header=True)
-            
+            VfrLogger.msg("Processing %s (%d out of %d)..." % (fname, ipass + 1, len(self._file_list)), header=True)
+
             # open OGR datasource
             try:
                 ids = self._open_ds(fname)
-            except VfrError as e:
-                VfrLogger.error(str(e))
+            except VfrError as e1:
+                VfrLogger.error(str(e1))
                 continue
-            
+
             if ids is None:
                 ipass += 1
-                continue # unable to open - skip
-            
+                continue  # unable to open - skip
+
             if not self.odsn:
                 # no output datasource given -> list available layers and exit
                 layer_list = self._list_layers(extended, sys.stdout)
-                if extended and os.path.exists(filename):
-                    compare_list(layer_list, parse_xml(filename))
+                if extended and os.path.exists(fname):
+                    compare_list(layer_list, parse_xml(fname))
             else:
                 if self.odsn is None:
-                    self.odsn = '.' # current directory
-                    
-                if pg and not epsg_checked:
+                    self.odsn = '.'  # current directory
+
+                if pg and not self.epsg_checked:
                     # check if EPSG 5514 exists in output DB (only first pass)
                     self._check_epsg()
-                    epsg_checked = True
-                    
-                if not layer_list:
-                    for l in self._list_layers(fd=None):
-                        if l not in layer_list:
-                            layer_list.append(l)
+                    self.epsg_checked = True
 
-                schema_name = None                
+                if not layer_list:
+                    for layer in self._list_layers(fd=sys.stdout):
+                        if layer not in layer_list:
+                            layer_list.append(layer)
+
+                schema_name = None
                 if pg:
                     # build datasource string per file
                     odsn_reset = self.odsn
@@ -974,11 +977,11 @@ class VfrOgr:
                         self.odsn += ' active_schema=%s' % schema_name
                         if schema_name not in self.schema_list:
                             self.schema_list.append(schema_name)
-                        self._ods.Destroy() # TODO: do it better
+                        self._ods.Destroy()  # TODO: do it better
                         self._ods = self._odrv.Open(self.odsn, True)
                         if self._ods is None:
                             raise VfrError("Unable to open or create new datasource '%s'" % self.odsn)
-                
+
                 # check mode - process changes or append
                 mode = Mode.write
                 if fname.split('_')[-1][0] == 'Z':
@@ -991,13 +994,13 @@ class VfrOgr:
                     if pg:
                         # force copy over insert
                         os.environ['PG_USE_COPY'] = 'YES'
-                
+
                 # do the conversion
                 try:
                     nfeat = self._convert_vfr(mode, schema_name)
-                except RuntimeError as e:
-                    raise VfrError("Unable to read %s: %s" % (fname, e))
-                
+                except RuntimeError as e1:
+                    raise VfrError("Unable to read %s: %s" % (fname, e1))
+
                 if pg:
                     # reset datasource string per file
                     if self._schema_per_file or self._schema:
@@ -1006,12 +1009,28 @@ class VfrOgr:
                         self._ods = self._odrv.Open(self.odsn, True)
                         if self._ods is None:
                             raise VfrError("Unable to open or create new datasource '%s'" % self.odsn)
-                
+
                 if nfeat > 0:
-                    append = True # append on next passes
+                    append = True  # append on next passes
 
             ids.Destroy()
             self._ids = None
             ipass += 1
-        
+
         return ipass
+
+    def _check_epsg(self):
+        # TODO
+        pass
+
+    def _get_fid_max(self, table_name):
+        # TODO
+        return -1
+
+    def _update_fid_seq(self, table_name, fid):
+        # TODO
+        pass
+
+    def _create_schema(self, schema_name):
+        # TODO
+        pass
