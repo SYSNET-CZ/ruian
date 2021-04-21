@@ -324,8 +324,8 @@ class RUIANDownloader:
     def download_url_to_file(self, url, file_index, files_count):
         """ Downloads to temporary file. If succeeded, then rename result. """
         try:
-            tmp_file_name = path_with_last_slash(self.data_dir) + 'tmpfile.bin'
-            log.logger.debug('RUIANDownloader.downloadURLtoFile')
+            tmp_file_name = os.path.join(self.data_dir, 'tmpfile.bin')
+            log.logger.info('download_ruian.download_url_to_file - data_dir: {}'.format(self.data_dir))
             file_name = os.path.join(self.data_dir, str(url).split('/')[-1])
             file_name = consolidate_download_file_name(file_name)       # má odstranit apostrof na konci. Kde se vzal?
             start_time = datetime.datetime.now()
