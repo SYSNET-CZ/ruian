@@ -126,8 +126,8 @@ class RUIANDownloader:
     def __init__(self, target_dir=""):
         assert isinstance(target_dir, (str, bytes))
 
-        self.data_dir = ""
-        self._targetDir = ""
+        self.data_dir = ''
+        self._targetDir = ''
         self.assign_target_dir(target_dir)
         self.download_infos = []
         self.downloadInfo = None
@@ -163,7 +163,7 @@ class RUIANDownloader:
 
         self.data_dir = target_dir
         if RUNS_ON_LINUX:
-            self.data_dir += "data/"
+            # self.data_dir += "data/"
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
 
