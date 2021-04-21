@@ -20,7 +20,6 @@ services:
     domainname: ruian.docker
     volumes:
       - download:/opt/ruian/data
-      - backup-data:/backups
       - ${PWD}/config:/opt/ruian/config
     networks:
       default:
