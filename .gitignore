@@ -64,3 +64,8 @@ nohup.out
 /venv/
 /data/
 /ruian-toolbox/shared_tools/DownloadedData/
+
+
+# Docker
+.env
+docker/postgis/.env
