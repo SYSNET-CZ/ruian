@@ -5,6 +5,8 @@
 DROP TABLE IF EXISTS public.administrative_division;
 CREATE TABLE public.administrative_division
 AS SELECT
+    public.parcely.ogc_fid ogc_fid_parcely,
+	public.parcely.gml_id gml_id_parcely,
 	public.parcely.id gid,
 	public.parcely.kmenovecislo cislo_parc,
 	public.parcely.pododdelenicisla cislo_parc_2,
@@ -45,7 +47,7 @@ FROM
 	LEFT OUTER JOIN public.staty ON (public.kraje.statkod=public.staty.kod)
 	LEFT OUTER JOIN public.regionysoudrznosti ON (public.vusc.regionsoudrznostikod=public.regionysoudrznosti.kod);
 
-ALTER TABLE public.administrative_division ADD PRIMARY KEY (gid);
+ALTER TABLE public.administrative_division ADD PRIMARY KEY (gml_id_parcely);
 
 SELECT UpdateGeometrySRID('public', 'administrative_division', 'geom', 5514);
 

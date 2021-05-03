@@ -29,3 +29,12 @@ GROUP BY searchstr;
 -- Drop temporary table fulltext_a
 -- --------------------------------------------------
 DROP TABLE fulltext_a;
+
+-- Index: fulltext_searchstr_idx
+
+-- DROP INDEX public.fulltext_searchstr_idx;
+
+CREATE INDEX fulltext_searchstr_idx
+    ON public.fulltext USING btree
+    (searchstr COLLATE pg_catalog."cs_CZ.utf8" ASC NULLS LAST)
+    TABLESPACE pg_default;
