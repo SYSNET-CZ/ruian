@@ -31,7 +31,7 @@ services:
       auth: md5
       # Add extensions you need to be enabled by default in the DB. Default are the five specified below
       POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
-      MAX_WAL_SIZE: 4GB
+      nax_wal_size: 4GB
     ports:
       - 127.0.0.1:25432:5432
     networks:

@@ -19,8 +19,10 @@ services:
     hostname: import
     domainname: ruian.docker
     volumes:
-      - download:/opt/ruian/data
-      - ${PWD}/config:/opt/ruian/config
+#      - download:/opt/ruian/data
+      - ./data/DownloadedData:/opt/ruian/data
+#      - ${PWD}/config:/opt/ruian/config
+      - ./config:/opt/ruian/config
     networks:
       default:
         aliases:

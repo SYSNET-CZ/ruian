@@ -11,3 +11,6 @@ lpthw.web==1.1
 # numpy==1.13.3
 web.py==0.51
 tabulate==0.8.7
+psycopg2~=2.8.6
+setuptools~=54.2.0
+sqlparse~=0.4.1

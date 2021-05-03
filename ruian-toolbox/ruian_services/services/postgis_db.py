@@ -125,7 +125,6 @@ class PostGISDatabase:
 def select_sql(search_sql):
     if search_sql is None or search_sql == "":
         return None
-
     try:
         db = PostGISDatabase()
         cursor = db.conn.cursor()

@@ -5,7 +5,26 @@
 DROP TABLE IF EXISTS address_points;
 
 CREATE TABLE address_points
-AS SELECT adresnimista.kod gid, obce.kod kod_obce, obce.nazev nazev_obce, momc.nazev nazev_momc, mop.nazev nazev_mop, castiobci.kod kod_casti_obce, castiobci.nazev nazev_casti_obce, ulice.nazev nazev_ulice, typ_st_objektu.zkratka typ_so, adresnimista.cislodomovni cislo_domovni, adresnimista.cisloorientacni cislo_orientacni, adresnimista.cisloorientacnipismeno znak_cisla_orientacniho, adresnimista.psc psc, -ST_X(adresnibod) latitude, -ST_Y(adresnibod) longitude, adresnimista.platiod plati_od, adresnimista.adresnibod the_geom
+AS SELECT
+    adresnimista.ogc_fid ogc_fid_am,
+    adresnimista.gml_id gml_id_am,
+    adresnimista.kod gid,
+    obce.kod kod_obce,
+    obce.nazev nazev_obce,
+    momc.nazev nazev_momc,
+    mop.nazev nazev_mop,
+    castiobci.kod kod_casti_obce,
+    castiobci.nazev nazev_casti_obce,
+    ulice.nazev nazev_ulice,
+    typ_st_objektu.zkratka typ_so,
+    adresnimista.cislodomovni cislo_domovni,
+    adresnimista.cisloorientacni cislo_orientacni,
+    adresnimista.cisloorientacnipismeno znak_cisla_orientacniho,
+    adresnimista.psc psc,
+    -ST_X(adresnibod) latitude,
+    -ST_Y(adresnibod) longitude,
+    adresnimista.platiod plati_od,
+    adresnimista.adresnibod geom
 FROM adresnimista
 LEFT OUTER JOIN ulice on (adresnimista.ulicekod=ulice.kod)
 LEFT OUTER JOIN stavebniobjekty on (adresnimista.stavebniobjektkod=stavebniobjekty.kod )
@@ -15,8 +34,17 @@ LEFT OUTER JOIN typ_st_objektu on (stavebniobjekty.typstavebnihoobjektukod=typ_s
 LEFT OUTER JOIN momc on (stavebniobjekty.momckod=momc.kod)
 LEFT OUTER JOIN mop on (momc.mopkod=mop.kod);
 
--- ALTER TABLE address_points ADD PRIMARY KEY (gid);
+ALTER TABLE address_points ADD PRIMARY KEY (gid);
 
-SELECT UpdateGeometrySRID('public', 'address_points', 'the_geom', 5514);
+SELECT UpdateGeometrySRID('public', 'address_points', 'geom', 5514);
 
-CREATE INDEX address_points_geom_idx ON address_points USING GIST (the_geom);
+CREATE INDEX address_points_geom_idx
+    ON public.address_points USING gist
+    (geom)
+    TABLESPACE pg_default;
+
+
+CREATE INDEX address_points_gid_idx
+    ON public.address_points USING btree
+    (gid ASC NULLS LAST)
+    TABLESPACE pg_default;

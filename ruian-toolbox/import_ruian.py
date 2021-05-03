@@ -14,6 +14,7 @@ from subprocess import call
 
 import shared_tools.log as log
 from importer import build_html_log
+from ruian_services.services.auxiliary_tables import post_import
 from ruian_services.services.geolocation import save_ruian_version_date_today
 from shared_tools import shared
 from shared_tools.base import extract_file_name2, \
@@ -384,6 +385,7 @@ def do_import(argv):
             print("do_import buildAll - END")
         else:
             print("do_import buildServicesTables - START")
+            post_import()
             build_services_tables()
             print("do_import buildServicesTables - END")
 
