@@ -35,3 +35,18 @@ services:
       - RUIAN_SERVICE_TABLES=True
       - RUIAN_AUTOCOMPLETE_TABLES=True
     restart: unless-stopped
+  service:
+    image: sysnetcz/ruian-swagger
+    container_name: ruian-service
+    hostname: ruian-service
+    domainname: ruian.docker
+    ports:
+    - 127.0.0.0:5000:8080
+    networks:
+      default:
+        aliases:
+          - ruian-service
+          - ruian-swagger
+    environment:
+      - TZ=Europe/Prague
+    restart: unless-stopped
