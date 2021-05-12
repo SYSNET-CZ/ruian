@@ -20,7 +20,8 @@ services:
     environment:
       # If you need to create multiple database you can add coma separated databases eg gis,data
       TZ: Europe/Prague
-      POSTGRES_DB: ${POSTGRES_DB}
+      PGTZ: Europe/Prague
+      POSTGRES_DB: ${POSTGRES_DB},gis
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASS: ${POSTGRES_PASS}
       ALLOW_IP_RANGE: '0.0.0.0/0'
@@ -31,7 +32,7 @@ services:
       auth: md5
       # Add extensions you need to be enabled by default in the DB. Default are the five specified below
       POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
-      nax_wal_size: 4GB
+      max_wal_size: 4GB
     ports:
       - 127.0.0.1:25432:5432
     networks:
@@ -82,6 +83,7 @@ services:
     # https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html
     image: dpage/pgadmin4:latest
     container_name: pgadmin
+    user: root
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     environment:
