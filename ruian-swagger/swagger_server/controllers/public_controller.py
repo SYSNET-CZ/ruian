@@ -17,7 +17,7 @@ from swagger_server.service import querying
 from swagger_server.service.common import compile_address_as_obj
 from swagger_server.service.conversion import string_wgs_to_jtsk, point2wgs
 from swagger_server.service.geolocation_reverse import get_ku, get_maplist, get_parcela, get_povodi, get_zsj, get_nearby
-from swagger_server.service.models import Coordinates
+from swagger_server.service.models import CoordinatesInternal
 from swagger_server.service.querying import full_text_search_address_object, compile_address, search_address
 from swagger_server.service.ruian_connection import find_address
 from swagger_server.util import who_am_i
@@ -149,7 +149,7 @@ def convert_point_jtsk_api(lat, lon):  # noqa: E501
         s = lat + ', ' + lon
         jtsk = string_wgs_to_jtsk(s)
         if jtsk is not None:
-            out = Coordinates(x=jtsk.x, y=jtsk.y)
+            out = CoordinatesInternal(x=jtsk.x, y=jtsk.y)
             app.app.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
         app.app.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
@@ -199,6 +199,8 @@ def ku_api(x, y):  # noqa: E501
         if out is not None:
             out = out.to_swagger
             app.app.logger.info('{}: {}'.format(__name__, 'Result returned'))
+        else:
+            app.app.logger.error('{}: {} x={}, y={}'.format(__name__, 'No data found for: ', x, y))
     else:
         app.app.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
@@ -560,6 +562,31 @@ def search_address_ft_api(query):  # noqa: E501
         out_list.append(adr.to_swagger)
     app.app.logger.info('{}: {}'.format(__name__, 'Result returned'))
     return out_list
+
+
+def search_address_id_api(id_):  # noqa: E501
+    """seach address by identifier
+
+    By passing in the appropriate options, you can obtain addres point  # noqa: E501
+
+    :param id_: Address point identifier
+    :type id_: int
+
+    :rtype: Address
+    """
+    __name__ = who_am_i()
+    COUNTER[__name__] += 1
+    if id_ is not None:
+        adr = find_address(id_)
+        if adr is not None:
+            app.app.logger.info('{}: {}'.format(__name__, 'Result returned'))
+            return adr.to_swagger
+        else:
+            app.app.logger.error('{}: Address point {} not found'.format(__name__, id_))
+            return None
+    else:
+        app.app.logger.error('{}: {}'.format(__name__, 'Missing identifier'))
+    return None
 
 
 def validate_address_id_api(id_):  # noqa: E501

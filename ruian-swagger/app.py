@@ -17,7 +17,7 @@ COUNTER = {
     'convert_point_wgs_api': 0,
     'ku_api': 0,
     'ku_wgs_api': 0,
-    'apy50_api': 0,
+    'mapy50_api': 0,
     'mapy50_wgs_api': 0,
     'nearby_address_api': 0,
     'nearby_address_wgs_api': 0,
@@ -29,6 +29,7 @@ COUNTER = {
     'povodi_wgs_api': 0,
     'search_address_api': 0,
     'search_address_ft_api': 0,
+    'search_address_id_api': 0,
     'validate_address_id_api': 0,
     'zsj_api': 0,
     'zsj_wgs_api': 0

@@ -36,7 +36,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -46,7 +46,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: plot (of land) object
@@ -54,6 +54,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Parcela'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -88,6 +90,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Parcela'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -136,6 +140,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Parcela'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -170,6 +176,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Parcela'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -202,7 +210,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -212,7 +220,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: basic settlement unit object
@@ -220,6 +228,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Zsj'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -268,6 +278,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Zsj'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -300,7 +312,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -310,7 +322,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: cadastral territory
@@ -318,6 +330,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KatastralniUzemi'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -366,6 +380,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KatastralniUzemi'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -398,7 +414,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -408,7 +424,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: basin info
@@ -416,6 +432,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Povodi'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -464,6 +482,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Povodi'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -496,7 +516,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -506,7 +526,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: map sheets layout info
@@ -514,6 +534,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MapovyList50'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -562,6 +584,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MapovyList50'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -594,7 +618,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -604,7 +628,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: nearby adresses info object array
@@ -615,6 +639,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/NearbyAddress'
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -666,6 +692,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/NearbyAddress'
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -714,6 +742,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PointJtsk'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -746,7 +776,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -1068317.864
+          example: -770559.237
       - name: "y"
         in: query
         description: JTSK y coordinate
@@ -756,7 +786,7 @@ paths:
         schema:
           type: number
           format: double
-          example: -770559.237
+          example: -1068317.864
       responses:
         "200":
           description: converted point
@@ -764,6 +794,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PointWgs'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -805,6 +837,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/Address'
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -822,7 +856,7 @@ paths:
     post:
       tags:
       - public
-      summary: search adresses by query
+      summary: search adresses by structured query
       description: "By passing in the appropriate options, you can obtain search results\n"
       operationId: search_address_api
       requestBody:
@@ -837,6 +871,48 @@ paths:
                 items:
                   $ref: '#/components/schemas/Address'
                 x-content-type: application/json
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /search/address/{id}:
+    get:
+      tags:
+      - public
+      summary: seach address by identifier
+      description: "By passing in the appropriate options, you can obtain addres point\n"
+      operationId: search_address_id_api
+      parameters:
+      - name: id
+        in: path
+        description: Address point identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: address point
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -879,6 +955,8 @@ paths:
                 items:
                   type: string
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -912,6 +990,8 @@ paths:
                 items:
                   type: string
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -952,6 +1032,8 @@ paths:
               schema:
                 type: string
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -992,6 +1074,8 @@ paths:
               schema:
                 type: boolean
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
         "401":
@@ -1023,6 +1107,8 @@ paths:
                 example: Mock data
                 default: Default info
                 x-content-type: application/json
+        "204":
+          description: no data returned
         "400":
           description: bad input parameter
       x-openapi-router-controller: swagger_server.controllers.developers_controller
@@ -1040,6 +1126,9 @@ components:
           format: double
           example: -1068166.65742
       description: JTSK coordinates
+      example:
+        x: -773537.486
+        y: -1068166.65742
     PointJtsk:
       type: object
       properties:
@@ -1065,6 +1154,9 @@ components:
           type: string
           example: 16.6159744E
       description: WGS-84 coordinates
+      example:
+        lon: 16.6159744E
+        lat: 49.1830672N
     PointWgs:
       type: object
       properties:
@@ -1403,6 +1495,8 @@ components:
           type: integer
           format: int64
           example: 1631217
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
       description: objekt adresy
       example:
         ruian_id: 1631217
@@ -1412,6 +1506,13 @@ components:
         record_number: 0
         district: district
         locality: Hořovice
+        coordinates:
+          wgs:
+            lon: 16.6159744E
+            lat: 49.1830672N
+          jtsk:
+            x: -773537.486
+            y: -1068166.65742
         house_number: 532
         district_number: 6
         zip_code: 26801
@@ -1438,12 +1539,34 @@ components:
           record_number: 0
           district: district
           locality: Hořovice
+          coordinates:
+            wgs:
+              lon: 16.6159744E
+              lat: 49.1830672N
+            jtsk:
+              x: -773537.486
+              y: -1068166.65742
           house_number: 532
           district_number: 6
           zip_code: 26801
           orientation_number_character: orientation_number_character
         distance: 1.45
         order: 1
+    Coordinates:
+      type: object
+      properties:
+        jtsk:
+          $ref: '#/components/schemas/Jtsk'
+        wgs:
+          $ref: '#/components/schemas/Wgs'
+      description: Souřadnice bodu
+      example:
+        wgs:
+          lon: 16.6159744E
+          lat: 49.1830672N
+        jtsk:
+          x: -773537.486
+          y: -1068166.65742
   responses:
     UnauthorizedError:
       description: API key is missing or invalid
@@ -1518,10 +1641,10 @@ components:
       type: apiKey
       name: X-API-KEY
       in: header
-      x-apikeyInfoFunc: swagger_server.controllers.authorization_controller.check_api_key
+      x-apikeyInfoFunc: swagger_server.controllers.authorization_controller.check_apiKey
     appId:
       type: apiKey
       name: X-APP-ID
       in: header
-      x-apikeyInfoFunc: swagger_server.controllers.authorization_controller.check_app_id
+      x-apikeyInfoFunc: swagger_server.controllers.authorization_controller.check_appId
 

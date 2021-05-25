@@ -11,10 +11,12 @@ import json
 
 __author__ = 'SYSNET'
 
-from swagger_server.models import KatastralniUzemi, AdministrativeDivision, MapovyList50, Parcela, Povodi, Zsj, Address
+from swagger_server.models import KatastralniUzemi, AdministrativeDivision, MapovyList50, \
+    Parcela, Povodi, Zsj, Address, Coordinates, Jtsk, Wgs
+from swagger_server.service.database import execute_sql, DATABASE_NAME_RUIAN
 
 
-class Coordinates(dict, object):
+class CoordinatesInternal(dict, object):
     # JTSK (5514)
     x: float
     y: float
@@ -29,7 +31,7 @@ class Coordinates(dict, object):
         # self.status = 'active'
 
 
-class CoordinatesGps(dict, object):
+class CoordinatesGpsInternal(dict, object):
     # WGS
     lat: float
     lon: float
@@ -42,12 +44,12 @@ class CoordinatesGps(dict, object):
 
 class AddressInternal(dict, object):
     def __init__(self, street, house_number, record_number, orientation_number, orientation_number_character,
-                 zip_code, locality, locality_part, district_number, district, ruian_id):
+                 zip_code, locality, locality_part, district_number, district, ruian_id, jtsk_x, jtsk_y):
         dict.__init__(
             self, street=street, house_number=house_number, record_number=record_number,
             orientation_number=orientation_number, orientation_number_character=orientation_number_character,
             zip_code=zip_code, locality=locality, locality_part=locality_part, district_number=district_number,
-            district=district, ruian_id=ruian_id
+            district=district, ruian_id=ruian_id, jtsk_x=jtsk_x, jtsk_y=jtsk_y
         )
         self.street = street
         self.house_number = house_number
@@ -60,36 +62,59 @@ class AddressInternal(dict, object):
         self.district_number = district_number
         self.district = district
         self.ruian_id = ruian_id
+        self.jtsk_x = jtsk_x
+        self.jtsk_y = jtsk_y
 
     @property
     def to_pretty(self):
         out = PrettyAddressInternal(
             self.street, self.house_number, self.record_number, self.orientation_number,
             self.orientation_number_character, self.zip_code, self.locality, self.locality_part,
-            self.district_number, self.district, self.ruian_id
+            self.district_number, self.district, self.ruian_id, self.jtsk_x, self.jtsk_y
         )
         return out
 
     @property
     def to_swagger(self):
+        def _to_wgs():
+            if (self.jtsk_x is not None) and (self.jtsk_y is not None):
+                geom = "ST_GeomFromText('POINT(-{0} -{0})',5514)".format(str(abs(self.jtsk_x)), str(abs(self.jtsk_y)))
+                sql = "SELECT ST_Transform({0}, 4326) AS wgs_geom;".format(geom)
+                cur = execute_sql(DATABASE_NAME_RUIAN, sql)
+                row = cur.fetchone()
+                cur.close()
+                if row is None:
+                    return None
+                wgs_value = {'lon': row[0].coords[0], 'lat': row[0].coords[1]}
+                return wgs_value
+            else:
+                return None
+
+        jtsk = Jtsk(x=self.jtsk_x, y=self.jtsk_y)
+        work = _to_wgs()
+        wgs = None
+        if work is not None:
+            wgs = Wgs(lat=work['lat'], lon=work['lon'])
+        coordinates = Coordinates(jtsk=jtsk, wgs=wgs)
         out = Address(
             street=self.street, ruian_id=self.ruian_id, zip_code=self.zip_code, locality=self.locality,
             locality_part=self.locality_part, house_number=self.house_number, record_number=self.record_number,
             district_number=self.district_number, orientation_number=self.orientation_number,
-            orientation_number_character=self.orientation_number_character, district=self.district
+            orientation_number_character=self.orientation_number_character, district=self.district,
+            coordinates=coordinates
         )
         return out
 
 
 class PrettyAddressInternal(dict, object):
     def __init__(self, street, house_number, record_number, orientation_number, orientation_number_character,
-                 zip_code, locality, locality_part, district_number, district, ruian_id):
+                 zip_code, locality, locality_part, district_number, district, ruian_id, jtsk_x, jtsk_y):
         # Convert None values to "".
         (street, house_number, record_number, orientation_number, orientation_number_character, zip_code, locality,
-         locality_part, district_number, district, ruian_id) = none_to_string(
-            (street, house_number, record_number, orientation_number,
-             orientation_number_character, zip_code, locality, locality_part, district_number, district, ruian_id))
-
+         locality_part, district_number, district, ruian_id, jtsk_x, jtsk_y) = none_to_string(
+            (street, house_number, record_number, orientation_number, orientation_number_character, zip_code, locality,
+             locality_part, district_number, district, ruian_id, jtsk_x, jtsk_y)
+        )
         self.street = street
         self.house_number = house_number
         self.record_number = record_number
@@ -101,6 +126,8 @@ class PrettyAddressInternal(dict, object):
         self.district_number = district_number
         self.district = district
         self.ruian_id = ruian_id
+        self.jtsk_x = jtsk_x
+        self.jtsk_y = jtsk_y
 
         self.zip_code = formatzip_code(self.zip_code)
         self.house_number = empty_string_if_no_number(self.house_number)
@@ -184,42 +211,40 @@ class MapovyList50Internal:
 
 
 class KatastralniUzemiInternal:
-
-    def __init__(self, row: tuple):
+    def __init__(self, row: tuple, offset=0):
         if row is not None:
-            self.id = row[2]
-            self.nazev = row[3]
-            self.obec_kod = row[4]
-            self.obec_nazev = row[5]
-            self.obec_statuskod = row[6]
-            self.orp_kod = int(row[7])
-            self.orp_nazev = row[8]
-            self.spravni_obec_kod = row[8]
-            self.spravni_obec_nazev = row[10]
-            self.pou_kod = row[11]
-            self.pou_nazev = row[12]
-            self.okres_kod = row[15]
-            self.okres_nazev = row[16]
-            self.vusc_kod = row[17]
-            self.vusc_nazev = row[18]
-            self.regionsoudrznosti_kod = row[19]
-            self.regionsoudrznosti_nazev = row[20]
+            self.ku_kod = row[offset + 2]
+            self.ku_nazev = row[offset + 3]
+            self.obec_kod = row[offset + 4]
+            self.obec_nazev = row[offset + 5]
+            self.obec_statuskod = row[offset + 6]
+            self.orp_kod = int(row[offset + 7])
+            self.orp_nazev = row[offset + 8]
+            self.spravni_obec_kod = row[offset + 8]
+            self.spravni_obec_nazev = row[offset + 10]
+            self.pou_kod = row[offset + 11]
+            self.pou_nazev = row[offset + 12]
+            self.okres_kod = row[offset + 15]
+            self.okres_nazev = row[offset + 16]
+            self.vusc_kod = row[offset + 17]
+            self.vusc_nazev = row[offset + 18]
+            self.regionsoudrznosti_kod = row[offset + 19]
+            self.regionsoudrznosti_nazev = row[offset + 20]
             self.nuts_1 = 'CZ'
-            self.nuts_2 = row[21]
-            self.nuts_3 = row[22]
-            self.nuts_lau1 = row[23]
-            self.nuts_lau2 = row[24]
+            self.nuts_2 = row[offset + 21]
+            self.nuts_3 = row[offset + 22]
+            self.nuts_lau1 = row[offset + 23]
+            self.nuts_lau2 = row[offset + 24]
+            self.id = self.ku_kod
+            self.nazev = self.ku_nazev
 
     @property
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=None)
 
     @property
-    def to_swagger(self):
-        out = KatastralniUzemi(
-            id_value=self.id,
-            nazev=self.nazev,
-            administrative_division=AdministrativeDivision(
+    def administrative_division(self):
+        out = AdministrativeDivision(
                 ku_kod=self.id, ku_nazev=self.nazev, nuts_lau1=self.nuts_lau1, nuts_lau2=self.nuts_lau2,
                 orp_nazev=self.orp_nazev, pou_nazev=self.pou_nazev, vusc_nazev=self.vusc_nazev,
                 obec_nazev=self.obec_nazev, spravni_obec_nazev=self.spravni_obec_nazev,
@@ -228,15 +253,27 @@ class KatastralniUzemiInternal:
                 obec_statuskod=self.obec_statuskod, regionsoudrznosti_kod=self.regionsoudrznosti_kod,
                 regionsoudrznosti_nazev=self.regionsoudrznosti_nazev, vusc_kod=self.vusc_kod, pou_kod=self.pou_kod,
                 okres_kod=self.okres_kod
-            ))
+            )
+        return out
+
+    @property
+    def to_swagger(self):
+        out = KatastralniUzemi(
+            id_value=self.id,
+            nazev=self.nazev,
+            administrative_division=self.administrative_division
+        )
         return out
 
 
-class ZsjInternal:
+class ZsjInternal(KatastralniUzemiInternal):
     # Zakladni sidelni jednotka
-
     def __init__(self, row: tuple):
         if row is not None:
+            super().__init__(row=row, offset=2)
+            self.id = row[2]
+            self.nazev = row[3]
+        """
             self.id = row[2]
             self.nazev = row[3]
             self.ku_kod = row[4]
@@ -261,36 +298,27 @@ class ZsjInternal:
             self.nuts_3 = row[24]
             self.nuts_lau1 = row[25]
             self.nuts_lau2 = row[26]
+        """
 
-    @property
-    def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=None)
 
     @property
     def to_swagger(self):
         out = Zsj(
             id_value=self.id, nazev=self.nazev,
-            administrative_division=AdministrativeDivision(
-                ku_kod=self.ku_kod, ku_nazev=self.ku_nazev, nuts_lau1=self.nuts_lau1, nuts_lau2=self.nuts_lau2,
-                orp_nazev=self.orp_nazev, pou_nazev=self.pou_nazev, vusc_nazev=self.vusc_nazev,
-                obec_nazev=self.obec_nazev, spravni_obec_nazev=self.spravni_obec_nazev,
-                spravni_obec_kod=self.spravni_obec_kod, orp_kod=self.orp_kod, obec_kod=self.obec_kod,
-                nuts_1=self.nuts_1, nuts_2=self.nuts_2, nuts_3=self.nuts_3, okres_nazev=self.okres_nazev,
-                obec_statuskod=self.obec_statuskod, regionsoudrznosti_kod=self.regionsoudrznosti_kod,
-                regionsoudrznosti_nazev=self.regionsoudrznosti_nazev, vusc_kod=self.vusc_kod, pou_kod=self.pou_kod,
-                okres_kod=self.okres_kod
-            ))
+            administrative_division=self.administrative_division)
         return out
 
 
-class ParcelaInternal:
-
+class ParcelaInternal(KatastralniUzemiInternal):
     def __init__(self, row: tuple):
         if row is not None:
+            super().__init__(row=row, offset=4)
             self.id = row[2]
             self.kmenovecislo = row[3]
             self.pododdelenicisla = row[4]
             self.vymeraparcely = row[5]
+            # self.nazev = ''
+        """
             self.ku_kod = row[6]
             self.ku_nazev = row[7]
             self.obec_kod = row[8]
@@ -313,26 +341,14 @@ class ParcelaInternal:
             self.nuts_3 = row[26]
             self.nuts_lau1 = row[27]
             self.nuts_lau2 = row[28]
-
-    @property
-    def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=None)
+        """
 
     @property
     def to_swagger(self):
         out = Parcela(
             id_value=self.id,
             kmenovecislo=self.kmenovecislo, pododdelenicisla=self.pododdelenicisla, vymeraparcely=self.vymeraparcely,
-            administrative_division=AdministrativeDivision(
-                ku_kod=self.ku_kod, ku_nazev=self.ku_nazev, nuts_lau1=self.nuts_lau1, nuts_lau2=self.nuts_lau2,
-                orp_nazev=self.orp_nazev, pou_nazev=self.pou_nazev, vusc_nazev=self.vusc_nazev,
-                obec_nazev=self.obec_nazev, spravni_obec_nazev=self.spravni_obec_nazev,
-                spravni_obec_kod=self.spravni_obec_kod, orp_kod=self.orp_kod, obec_kod=self.obec_kod,
-                nuts_1=self.nuts_1, nuts_2=self.nuts_2, nuts_3=self.nuts_3, okres_nazev=self.okres_nazev,
-                obec_statuskod=self.obec_statuskod, regionsoudrznosti_kod=self.regionsoudrznosti_kod,
-                regionsoudrznosti_nazev=self.regionsoudrznosti_nazev, vusc_kod=self.vusc_kod, pou_kod=self.pou_kod,
-                okres_kod=self.okres_kod
-            ))
+            administrative_division=self.administrative_division)
         return out
 
 
@@ -384,8 +400,8 @@ class PovodiInternal:
 
 class Locality(dict, object):
     address: AddressInternal
-    coordinates: Coordinates
-    coordinates_gps: CoordinatesGps
+    coordinates: CoordinatesInternal
+    coordinates_gps: CoordinatesGpsInternal
     zsj: ZsjInternal
 
     def __init__(self, address, coordinates=None, coordinates_gps=None, zsj=None):
@@ -396,19 +412,21 @@ class Locality(dict, object):
         self.zsj = zsj
 
 
-class AdresniBodInteral:
-    dist: float  # OO vzdalenost od bodu
-    id: int  # 01 adresnimista.kod
-    cislo_domovni: int  # 02 adresnimista.cislodomovni
-    cislo_orientacni: int  # 03 adresnimista.cisloorientacni
-    cislo_orientacni_pismeno: str  # 04 adresnimista.cisloorientacnipismeno
-    typ_so: str  # typ čísla (č.p., č.ev.)
-    psc: int  # 05 adresnimista.psc,
-    cast_obce: str  # 10 castiobci.nazev,
-    obec: str  # 12 obce.nazev,
-    ulice: str  # 13 ulice.nazev,
-    momc: str  # 14 momc.nazev,
-    mop: str  # 16 mop.nazev
+class AdresniBodInternal:
+    id: int  # 00 adresnimista.kod
+    cislo_domovni: int  # 01 adresnimista.cislodomovni
+    cislo_orientacni: int  # 02 adresnimista.cisloorientacni
+    cislo_orientacni_pismeno: str  # 03 adresnimista.cisloorientacnipismeno
+    typ_so: str  # 05 typ čísla (č.p., č.ev.)
+    psc: int  # 04 adresnimista.psc,
+    cast_obce: str  # 09 castiobci.nazev,
+    obec: str  # 11 obce.nazev,
+    ulice: str  # 12 ulice.nazev,
+    momc: str  # 13 momc.nazev,
+    mop: str  # 15 mop.nazev,
+    jtsk_x: float  # 16 latitude = -x,
+    jtsk_y: float  # 17 longitude = -y
+    dist: float  # 18 vzdalenost od bodu
 
     def __init__(self, row: tuple):
         if row is not None:
@@ -423,7 +441,10 @@ class AdresniBodInteral:
             self.ulice = row[12]
             self.momc = row[13]
             self.mop = row[15]
-            self.dist = row[16]
+            self.jtsk_x = -float(row[16])
+            self.jtsk_y = -float(row[17])
+            self.dist = row[18]
+
     @property
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=None, ensure_ascii=False)
@@ -441,7 +462,9 @@ class AdresniBodInteral:
             orientation_number=self.cislo_orientacni,
             orientation_number_character=self.cislo_orientacni_pismeno,
             ruian_id=self.id,
-            district=None
+            district=None,
+            jtsk_y=self.jtsk_y,
+            jtsk_x=self.jtsk_x
         )
         if self.typ_so == 'č.ev.':
             adr.record_number = self.cislo_domovni

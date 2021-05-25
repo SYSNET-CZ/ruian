@@ -10,12 +10,12 @@
 # from collections import defaultdict
 from collections import defaultdict
 from typing import List, Any
-# from urllib.parse import unquote
 from urllib.parse import unquote
 
 import psycopg2
 from lat_lon_parser import parser
 
+from app import app
 from swagger_server.service.common import compile_address_as_json, compile_address_as_text, compile_address_as_xml, \
     compile_address_to_one_row, number_to_string, analyse_row, right_address, TEXT_FORMAT_TEXT, TEXT_FORMAT_JSON, \
     TEXT_FORMAT_XML, TEXT_FORMAT_TEXT2ONEROW, TEXT_FORMAT_HTML2ONEROW, list_to_response_text, \
@@ -28,12 +28,15 @@ from swagger_server.service.database import execute_sql, number_value, \
     TYP_SO_FIELDNAME, get_result, MOP_NAME, \
     ADMINISTRATIVE_DIVISION_TABLE_NAME, ADDRESSPOINTS_TABLE_NAME, ADMINISTRATIVE_DIVISION_ZSJ_TABLE_NAME, \
     ADMINISTRATIVE_DIVISION_KU_TABLE_NAME, ZVM50KLAD_TABLENAME, DATABASE_NAME_MAPY, FULLTEXT_EXTENDED_TABLENAME
-from swagger_server.service.models import AddressInternal, PovodiInternal, Coordinates, CoordinatesGps, ParcelaInternal, AdresniBodInteral, ZsjInternal, \
+from swagger_server.service.models import AddressInternal, PovodiInternal, CoordinatesInternal, CoordinatesGpsInternal, \
+    ParcelaInternal, AdresniBodInternal, ZsjInternal, \
     Locality, \
     none_to_string, KatastralniUzemiInternal, MapovyList50Internal
 from swagger_server.service.utils import is_int, number_check
 
 __author__ = 'SYSNET'
+
+from swagger_server.util import who_am_i
 
 exact_match_needed = False
 
@@ -99,20 +102,20 @@ ITEM_TO_FIELD = {
 
 ADDRESSPOINTS_COLUMNS_FIND = \
     "nazev_ulice, cislo_domovni, typ_so, cislo_orientacni, znak_cisla_orientacniho, psc, " \
-    "nazev_obce, nazev_casti_obce, nazev_mop "
+    "nazev_obce, nazev_casti_obce, nazev_mop, latitude, longitude "
 ADDRESSPOINTS_COLUMNS_NEARBY = \
     "gid, nazev_obce, nazev_casti_obce, nazev_ulice, typ_so, cislo_domovni, " \
-    "cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop"
+    "cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop, latitude, longitude"
 ADDRESSPOINTS_COLUMNS_VALIDATE = \
     "gid, cislo_domovni, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_obce, " \
-    "nazev_casti_obce, nazev_mop, nazev_ulice, typ_so"
+    "nazev_casti_obce, nazev_mop, nazev_ulice, typ_so, latitude, longitude"
 ADDRESSPOINTS_COLUMNS_FIND_COORD = \
     "latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, " \
     "cislo_domovni, typ_so, cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop"
 ADDRESSPOINTS_COLUMNS_GET_LIST = \
     "gid, cislo_domovni, cislo_orientacni, znak_cisla_orientacniho, psc, typ_so, " \
     "'kod_ulice', kod_casti_obce, 'momckod', nazev_casti_obce, kod_obce, nazev_obce, " \
-    "nazev_ulice, nazev_momc, 'mopkod', nazev_mop"
+    "nazev_ulice, nazev_momc, 'mopkod', nazev_mop, latitude, longitude"
 
 ROZVODNICE_COLUMNS_GET = "*"
 ROZVODNICE_COLUMNS_GET_LIST = \
@@ -151,7 +154,7 @@ def _convert_point_to_wgs(y, x):
     cur.close()
     if row is None:
         return None
-    out = CoordinatesGps(lon=row[0].coords[0], lat=row[0].coords[1])
+    out = CoordinatesGpsInternal(lon=row[0].coords[0], lat=row[0].coords[1])
     return out
 
 
@@ -177,22 +180,22 @@ def _convert_point_to_jtsk(lat, lon):
     cur.close()
     if row is None:
         return None
-    out = Coordinates(x=row[0].coords[0], y=row[0].coords[1])
+    out = CoordinatesInternal(x=row[0].coords[0], y=row[0].coords[1])
     return out
 
 
-def _convert_coord_to_wgs(coord: Coordinates):
+def _convert_coord_to_wgs(coord: CoordinatesInternal):
     point = _convert_point_to_wgs(coord.y, coord.x)
     if point is not None:
-        out = CoordinatesGps(lat=point.lat, lon=point.lon)
+        out = CoordinatesGpsInternal(lat=point.lat, lon=point.lon)
         return out
     return None
 
 
-def _convert_coord_to_jtsk(coord: CoordinatesGps):
+def _convert_coord_to_jtsk(coord: CoordinatesGpsInternal):
     point = _convert_point_to_jtsk(coord.lat, coord.lon)
     if point is not None:
-        out = Coordinates(point.y, point.x)
+        out = CoordinatesInternal(point.y, point.x)
         return out
     return None
 
@@ -210,7 +213,7 @@ def _get_adresa(y, x):
     cur.close()
     if row is None:
         return None
-    out: AdresniBodInteral = AdresniBodInteral(row)
+    out: AdresniBodInternal = AdresniBodInternal(row)
     return out
 
 
@@ -236,12 +239,12 @@ def _get_adresa_sav(y, x):
     cur.close()
     if row is None:
         return None
-    out: AdresniBodInteral = AdresniBodInteral(row)
+    out: AdresniBodInternal = AdresniBodInternal(row)
     return out
 
 
 def geom_point(column_name, x, y):
-    geom = column_name + ",ST_GeomFromText('POINT(-{0} -{1})',5514)".format(str(abs(x)), str(abs(y)))
+    geom = column_name + ",ST_GeomFromText('POINT(-{1} -{0})',5514)".format(str(abs(y)), str(abs(x)))
     return geom
 
 
@@ -277,8 +280,11 @@ def _get_administrative_division_zsj(y, x):
 
 
 def _get_administrative_division_ku(y, x):
-    geom = geom_point("geom_polygon", x, y)
-    sql = "SELECT * FROM " + ADMINISTRATIVE_DIVISION_KU_TABLE_NAME + " WHERE ST_Contains(%s);" % geom
+    __name__ = who_am_i()
+    geom = geom_point(column_name="geom_polygon", x=x, y=y)
+    sql = "SELECT * FROM {0} WHERE ST_Contains({1});".format(ADMINISTRATIVE_DIVISION_KU_TABLE_NAME, geom)
+    print('SQL:', sql)
+    app.app.logger.info('{}: {} - {}'.format(__name__, 'SQL:', sql))
     row = get_row(DATABASE_NAME_RUIAN, sql)
     if row is None:
         return None
@@ -336,8 +342,8 @@ def _get_rozvodnice(y, x):
 
 def _get_rozvodnice_wgs(lat, lon):
     # TODO: NEFUNGUJE
-    c0 = CoordinatesGps(lat, lon)
-    c1: Coordinates = _convert_coord_to_jtsk(c0)
+    c0 = CoordinatesGpsInternal(lat, lon)
+    c1: CoordinatesInternal = _convert_coord_to_jtsk(c0)
     out = _get_rozvodnice(-c1.y, -c1.x)
     return out
 
@@ -352,9 +358,10 @@ def _find_address(identifier):
         (house_number, record_number) = analyse_row(row[2], number_to_string(row[1]))
         a = number_value(none_to_string(row[8]))
         address = AddressInternal(
-            none_to_string(row[0]), house_number, record_number, number_to_string(row[3]), none_to_string(row[4]),
-            number_to_string(row[5]), none_to_string(row[6]), none_to_string(row[7]),
-            a, none_to_string(row[8]), identifier
+            street=none_to_string(row[0]), house_number=house_number, record_number=record_number,
+            orientation_number=number_to_string(row[3]), orientation_number_character=none_to_string(row[4]),
+            zip_code=number_to_string(row[5]), locality=none_to_string(row[6]), locality_part=none_to_string(row[7]),
+            district_number=a, district=none_to_string(row[8]), ruian_id=identifier, jtsk_x=row[9], jtsk_y=row[10]
         )
         return address
     else:
@@ -368,12 +375,14 @@ def _get_nearby_addresses(y, x, distance=DISTANCE_GET_NEARBY, max_count=MAX_COUN
     addres_list = []
     i = 0
     for row in rows:
-        address_point = AdresniBodInteral(row)
+        print("ROW:", row)
+        address_point = AdresniBodInternal(row)
+        # pridat AdresniBodInternal.load_nearby_locality
         address = address_point.to_address
         i += 1
         item = {
             "order": i,
-            "distance": row[16],
+            "distance": row[18],
             "address": address
         }
         addres_list.append(item)
@@ -505,14 +514,21 @@ def _find_locality(identifier, details=True):  # identifikator adresniho bodu
     if not work:
         return None
     row = work[0]
-    coord = Coordinates(float(row[0]), float(row[1]))
+    coord = CoordinatesInternal(float(row[0]), float(row[1]))
     coord_gps = _convert_coord_to_wgs(coord=coord)
-    addr = AddressInternal(row[5], row[6], row[7], row[8], row[9], row[10], row[3], row[4], None, row[11], row[2])
+    addr = AddressInternal(
+        street=row[5], house_number=row[6], record_number=row[7], orientation_number=row[8],
+        orientation_number_character=row[9], zip_code=row[10], locality=row[3], locality_part=row[4],
+        district_number=None, district=row[11], ruian_id=row[2], jtsk_x=float(row[1]), jtsk_y=float(row[0]))
     zsj = None
     if details:
         zsj = _get_administrative_division_zsj(y=coord.y, x=coord.x)
     locality = Locality(address=addr, coordinates=coord, coordinates_gps=coord_gps, zsj=zsj)
     return locality
+
+
+
+
 
 
 def geocode_id(address_id):
@@ -564,7 +580,7 @@ def dictionary_to_locality(dictionary):
     if dictionary:
         coordinates = None
         if dictionary[ADDR_X] and dictionary[ADDR_Y]:
-            coordinates = Coordinates(dictionary[ADDR_Y], dictionary[ADDR_X])
+            coordinates = CoordinatesInternal(dictionary[ADDR_Y], dictionary[ADDR_X])
         address = AddressInternal(
             dictionary[ADDR_STREET], dictionary[ADDR_HOUSE_NUMBER], dictionary[ADDR_RECORD_NUMBER],
             dictionary[ADDR_ORIENTATION_NUMBER], dictionary[ADDR_ORIENTATION_NUMBER_CHARACTER],
@@ -652,7 +668,7 @@ def _find_coordinates_by_address(dictionary):
             )
             # latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, cislo_domovni, typ_so,
             # cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop
-            coord = Coordinates(row[0], row[1])
+            coord = CoordinatesInternal(row[0], row[1])
             addr = AddressInternal(row[5], house_number, record_number, row[8], row[9], row[10], row[3], row[4], None, row[11],
                                    row[2])
             loc = Locality(addr, coord)
@@ -924,7 +940,7 @@ def search_address(
             district=work['district'], district_number=work['district_number'], house_number=work['house_number'],
             orientation_number=work['orientation_number'], record_number=work['record_number'],
             ruian_id=work['ruian_id'], zip_code=work['zip_code'], locality=work['locality'],
-            locality_part=work['locality_part']
+            locality_part=work['locality_part'], jtsk_x=None, jtsk_y=None
         )
         if out is not None:
             out_list.append(out)
@@ -1111,8 +1127,9 @@ def full_text_search_address_object(address):
             else:
                 record_number = item[5]
             a = AddressInternal(
-                item[3], house_number, record_number, item[6], item[7], item[8], item[1], item[2], None, item[9],
-                item[0]
+                street=item[3], house_number=house_number, record_number=record_number, orientation_number=item[6],
+                orientation_number_character=item[7], zip_code=item[8], locality=item[1], locality_part=item[2],
+                district_number=None, district=item[9], ruian_id=item[0], jtsk_x=item[10], jtsk_y=item[11]
             )
             out.append(a)
         return out
@@ -1302,10 +1319,10 @@ def get_candidate_query(analysed_items):
     if sql_items:
         inner_sql = "SELECT {3}({0}) FROM {1} WHERE {2}".format(
             GIDS_FIELDNAME, FULLTEXT_EXTENDED_TABLENAME, " AND ".join(sql_items), 'explode_array')
-        sql = "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {11} FROM {9} WHERE {0} IN ({10} LIMIT 100)".format(
+        sql = "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {11}, {12}, {13} FROM {9} WHERE {0} IN ({10} LIMIT 100)".format(
             GID_FIELDNAME, TOWNNAME_FIELDNAME, TOWNPART_FIELDNAME, STREETNAME_FIELDNAME, TYP_SO_FIELDNAME,
             CISLO_DOMOVNI_FIELDNAME, CISLO_ORIENTACNI_FIELDNAME, ZNAK_CISLA_ORIENTACNIHO_FIELDNAME,
-            ZIP_CODE_FIELDNAME, ADDRESSPOINTS_TABLE_NAME, str(inner_sql), MOP_NAME)
+            ZIP_CODE_FIELDNAME, ADDRESSPOINTS_TABLE_NAME, str(inner_sql), MOP_NAME, 'latitude', 'longitude')
     return sql
 
 
