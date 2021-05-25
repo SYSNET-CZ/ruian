@@ -3,19 +3,10 @@
 from __future__ import absolute_import
 
 from flask import json
-from six import BytesIO
 
 from swagger_server.models.address import Address  # noqa: E501
 from swagger_server.models.jtsk import Jtsk  # noqa: E501
-from swagger_server.models.katastralni_uzemi import KatastralniUzemi  # noqa: E501
-from swagger_server.models.mapovy_list50 import MapovyList50  # noqa: E501
-from swagger_server.models.nearby_address import NearbyAddress  # noqa: E501
-from swagger_server.models.parcela import Parcela  # noqa: E501
-from swagger_server.models.point_jtsk import PointJtsk  # noqa: E501
-from swagger_server.models.point_wgs import PointWgs  # noqa: E501
-from swagger_server.models.povodi import Povodi  # noqa: E501
 from swagger_server.models.wgs import Wgs  # noqa: E501
-from swagger_server.models.zsj import Zsj  # noqa: E501
 from swagger_server.test import BaseTestCase
 
 
@@ -259,7 +250,7 @@ class TestPublicController(BaseTestCase):
     def test_search_address_api(self):
         """Test case for search_address_api
 
-        search adresses by query
+        search adresses by structured query
         """
         body = Address()
         response = self.client.open(
@@ -280,6 +271,17 @@ class TestPublicController(BaseTestCase):
             '/sysnetcz/RUIAN/1.0.0-oas3/search/address',
             method='GET',
             query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_search_address_id_api(self):
+        """Test case for search_address_id_api
+
+        seach address by identifier
+        """
+        response = self.client.open(
+            '/sysnetcz/RUIAN/1.0.0-oas3/search/address/{id}'.format(id=789),
+            method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

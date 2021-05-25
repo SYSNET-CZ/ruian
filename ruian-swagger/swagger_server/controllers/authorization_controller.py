@@ -11,8 +11,8 @@ from app import app
 from swagger_server.config import X_API_ID, X_API_KEY
 
 
-def check_api_key(api_key, required_scopes):
-    __name__ = check_api_key.__name__
+def check_apiKey(api_key, required_scopes):
+    __name__ = check_apiKey.__name__
     if api_key is None:
         app.app.logger.error('{0}: missing api key'.format(__name__))
         raise connexion.exceptions.Unauthorized('missing api key')
@@ -25,7 +25,7 @@ def check_api_key(api_key, required_scopes):
     return out
 
 
-def check_app_id(api_key, required_scopes):
+def check_appId(api_key, required_scopes):
     # nepoužívá se
     if api_key is None:
         raise connexion.exceptions.Unauthorized('missing api id')
