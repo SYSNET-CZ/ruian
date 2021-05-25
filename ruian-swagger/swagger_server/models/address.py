@@ -6,6 +6,7 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from swagger_server.models.base_model_ import Model
+from swagger_server.models.coordinates import Coordinates  # noqa: F401,E501
 from swagger_server import util
 
 
@@ -18,7 +19,7 @@ class Address(Model):
     def __init__(self, street: str = None, house_number: int = None, record_number: int = None,
                  orientation_number: int = None, orientation_number_character: str = None, zip_code: int = None,
                  locality: str = None, locality_part: str = None, district_number: int = None, district: str = None,
-                 ruian_id: int = None):  # noqa: E501
+                 ruian_id: int = None, coordinates: Coordinates = None):  # noqa: E501
         """Address - a model defined in Swagger
 
         :param street: The street of this Address.  # noqa: E501
@@ -43,6 +44,8 @@ class Address(Model):
         :type district: str
         :param ruian_id: The ruian_id of this Address.  # noqa: E501
         :type ruian_id: int
+        :param coordinates: The coordinates of this Address.  # noqa: E501
+        :type coordinates: Coordinates
         """
         self.swagger_types = {
             'street': str,
@@ -55,7 +58,8 @@ class Address(Model):
             'locality_part': str,
             'district_number': int,
             'district': str,
-            'ruian_id': int
+            'ruian_id': int,
+            'coordinates': Coordinates
         }
 
         self.attribute_map = {
@@ -69,7 +73,8 @@ class Address(Model):
             'locality_part': 'locality_part',
             'district_number': 'district_number',
             'district': 'district',
-            'ruian_id': 'ruian_id'
+            'ruian_id': 'ruian_id',
+            'coordinates': 'coordinates'
         }
         self._street = street
         self._house_number = house_number
@@ -82,6 +87,7 @@ class Address(Model):
         self._district_number = district_number
         self._district = district
         self._ruian_id = ruian_id
+        self._coordinates = coordinates
 
     @classmethod
     def from_dict(cls, dikt) -> 'Address':
@@ -324,3 +330,24 @@ class Address(Model):
         """
 
         self._ruian_id = ruian_id
+
+    @property
+    def coordinates(self) -> Coordinates:
+        """Gets the coordinates of this Address.
+
+
+        :return: The coordinates of this Address.
+        :rtype: Coordinates
+        """
+        return self._coordinates
+
+    @coordinates.setter
+    def coordinates(self, coordinates: Coordinates):
+        """Sets the coordinates of this Address.
+
+
+        :param coordinates: The coordinates of this Address.
+        :type coordinates: Coordinates
+        """
+
+        self._coordinates = coordinates
