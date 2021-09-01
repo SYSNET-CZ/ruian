@@ -25,4 +25,4 @@ EXPOSE 8080
 
 # ENTRYPOINT ["python3"]
 # CMD ["-m", "swagger_server"]
-CMD ["gunicorn", "app:app", "-w", "8", "-b", "0.0.0.0:8080"]
+CMD ["gunicorn", "app:app", "-w", "4", "-b", "0.0.0.0:8080"]
