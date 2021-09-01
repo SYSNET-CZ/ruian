@@ -48,3 +48,18 @@ services:
     environment:
       - TZ=Europe/Prague
     restart: unless-stopped
+  service-102:
+    image: sysnetcz/ruian-swagger:1.0.2
+    container_name: ruian-service-102
+    hostname: ruian-service-102
+    domainname: ruian.docker
+    ports:
+    - 127.0.0.1:5005:8080
+    networks:
+      default:
+        aliases:
+          - ruian-service-102
+          - ruian-swagger-102
+    environment:
+      - TZ=Europe/Prague
+    restart: unless-stopped

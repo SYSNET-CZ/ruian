@@ -12,7 +12,7 @@ import json
 __author__ = 'SYSNET'
 
 from swagger_server.models import KatastralniUzemi, AdministrativeDivision, MapovyList50, \
-    Parcela, Povodi, Zsj, Address, Coordinates, Jtsk, Wgs
+    Parcela, Povodi, Zsj, Address, Coordinates, Jtsk, Wgs, Settlement, CadastralTerritory
 from swagger_server.service.database import execute_sql, DATABASE_NAME_RUIAN
 
 
@@ -78,8 +78,10 @@ class AddressInternal(dict, object):
     def to_swagger(self):
         def _to_wgs():
             if (self.jtsk_x is not None) and (self.jtsk_y is not None):
-                geom = "ST_GeomFromText('POINT(-{0} -{0})',5514)".format(str(abs(self.jtsk_x)), str(abs(self.jtsk_y)))
-                sql = "SELECT ST_Transform({0}, 4326) AS wgs_geom;".format(geom)
+                x = abs(self.jtsk_x)
+                y = abs(self.jtsk_y)
+                geom = "ST_GeomFromText('POINT(-%s -%s)',5514)" % (str(x), str(y))
+                sql = "SELECT ST_Transform(" + geom + ", 4326) AS wgs_geom;"
                 cur = execute_sql(DATABASE_NAME_RUIAN, sql)
                 row = cur.fetchone()
                 cur.close()
@@ -237,6 +239,9 @@ class KatastralniUzemiInternal:
             self.nuts_lau2 = row[offset + 24]
             self.id = self.ku_kod
             self.nazev = self.ku_nazev
+            mp = row[offset + 26]
+            self.jtsk_x = mp.geoms[0].x
+            self.jtsk_y = mp.geoms[0].y
 
     @property
     def to_json(self):
@@ -245,25 +250,33 @@ class KatastralniUzemiInternal:
     @property
     def administrative_division(self):
         out = AdministrativeDivision(
-                ku_kod=self.id, ku_nazev=self.nazev, nuts_lau1=self.nuts_lau1, nuts_lau2=self.nuts_lau2,
-                orp_nazev=self.orp_nazev, pou_nazev=self.pou_nazev, vusc_nazev=self.vusc_nazev,
-                obec_nazev=self.obec_nazev, spravni_obec_nazev=self.spravni_obec_nazev,
-                spravni_obec_kod=self.spravni_obec_kod, orp_kod=self.orp_kod, obec_kod=self.obec_kod,
-                nuts_1=self.nuts_1, nuts_2=self.nuts_2, nuts_3=self.nuts_3, okres_nazev=self.okres_nazev,
-                obec_statuskod=self.obec_statuskod, regionsoudrznosti_kod=self.regionsoudrznosti_kod,
-                regionsoudrznosti_nazev=self.regionsoudrznosti_nazev, vusc_kod=self.vusc_kod, pou_kod=self.pou_kod,
-                okres_kod=self.okres_kod
-            )
+            ku_kod=self.ku_kod, ku_nazev=self.ku_nazev, nuts_lau1=self.nuts_lau1, nuts_lau2=self.nuts_lau2,
+            orp_nazev=self.orp_nazev, pou_nazev=self.pou_nazev, vusc_nazev=self.vusc_nazev,
+            obec_nazev=self.obec_nazev, spravni_obec_nazev=self.spravni_obec_nazev,
+            spravni_obec_kod=self.spravni_obec_kod, orp_kod=self.orp_kod, obec_kod=self.obec_kod,
+            nuts_1=self.nuts_1, nuts_2=self.nuts_2, nuts_3=self.nuts_3, okres_nazev=self.okres_nazev,
+            obec_statuskod=self.obec_statuskod, regionsoudrznosti_kod=self.regionsoudrznosti_kod,
+            regionsoudrznosti_nazev=self.regionsoudrznosti_nazev, vusc_kod=self.vusc_kod, pou_kod=self.pou_kod,
+            okres_kod=self.okres_kod
+        )
         return out
 
     @property
     def to_swagger(self):
         out = KatastralniUzemi(
-            id_value=self.id,
-            nazev=self.nazev,
+            id_value=self.ku_kod,
+            nazev=self.ku_nazev,
             administrative_division=self.administrative_division
         )
         return out
+
+    @property
+    def cadastral_territory(self):
+        ct = CadastralTerritory(
+            id_value=self.ku_kod,
+            nazev=self.ku_nazev
+        )
+        return ct
 
 
 class ZsjInternal(KatastralniUzemiInternal):
@@ -272,7 +285,10 @@ class ZsjInternal(KatastralniUzemiInternal):
         if row is not None:
             super().__init__(row=row, offset=2)
             self.id = row[2]
+            self.zsj_id = row[2]
             self.nazev = row[3]
+            self.zsj_nazev = row[3]
+
         """
             self.id = row[2]
             self.nazev = row[3]
@@ -300,13 +316,19 @@ class ZsjInternal(KatastralniUzemiInternal):
             self.nuts_lau2 = row[26]
         """
 
-
     @property
     def to_swagger(self):
+        sett = Settlement(id_value=self.zsj_id, nazev=self.zsj_nazev)
         out = Zsj(
-            id_value=self.id, nazev=self.nazev,
-            administrative_division=self.administrative_division)
+            settlement=sett,
+            administrative_division=self.administrative_division
+        )
         return out
+
+    @property
+    def settlement(self):
+        sett = Settlement(id_value=self.zsj_id, nazev=self.zsj_nazev)
+        return sett
 
 
 class ParcelaInternal(KatastralniUzemiInternal):
@@ -314,6 +336,7 @@ class ParcelaInternal(KatastralniUzemiInternal):
         if row is not None:
             super().__init__(row=row, offset=4)
             self.id = row[2]
+            self.parcela_id = row[2]
             self.kmenovecislo = row[3]
             self.pododdelenicisla = row[4]
             self.vymeraparcely = row[5]
@@ -346,7 +369,7 @@ class ParcelaInternal(KatastralniUzemiInternal):
     @property
     def to_swagger(self):
         out = Parcela(
-            id_value=self.id,
+            id_value=self.parcela_id,
             kmenovecislo=self.kmenovecislo, pododdelenicisla=self.pododdelenicisla, vymeraparcely=self.vymeraparcely,
             administrative_division=self.administrative_division)
         return out
