@@ -1,5 +1,5 @@
 # FROM python:3.6-alpine
-FROM python:3-buster
+FROM python:3-bullseye
 
 ARG WORK_DIR=/opt/ruian
 RUN mkdir -p ${WORK_DIR}
