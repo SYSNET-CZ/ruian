@@ -6,7 +6,7 @@ six~=1.16.0
 environs~=9.3.2
 psycopg2==2.8.6
 postgis==1.0.4
-urllib3==1.26.4
+urllib3>=1.26.5
 
 dicttoxml~=1.7.4
 lat-lon-parser==1.2.0
