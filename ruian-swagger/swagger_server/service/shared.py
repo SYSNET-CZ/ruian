@@ -11,18 +11,21 @@
 
 from urllib import parse
 
-from service.common import TEXT_FORMAT_XML, TEXT_FORMAT_HTML, TEXT_FORMAT_HTML2ONEROW, TEXT_FORMAT_JSON, \
+# from service.common import TEXT_FORMAT_XML, TEXT_FORMAT_HTML, TEXT_FORMAT_HTML2ONEROW, TEXT_FORMAT_JSON, \
+#     TEXT_FORMAT_TEXT2ONEROW, LINE_SEPARATOR_HTML
+# from service.models import none_to_string
+from swagger_server.service.common import TEXT_FORMAT_XML, TEXT_FORMAT_HTML, TEXT_FORMAT_HTML2ONEROW, TEXT_FORMAT_JSON, \
     TEXT_FORMAT_TEXT2ONEROW, LINE_SEPARATOR_HTML
-from service.models import none_to_string
+from swagger_server.service.models import none_to_string
 
 services = []
 
 
 # ================================================================================
 # new code RJ
-def get_query_value(query_params, id_value, default_value=None):
+def get_query_value2(query_params, id_value, default_value=None):
     # Vrací hodnotu URL Query parametruy id, pokud neexistuje, vrací hodnotu defValue
-    if id_value is query_params:
+    if id_value in query_params:
         return query_params[id_value]
     else:
         return default_value

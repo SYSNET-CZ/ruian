@@ -1,4 +1,6 @@
-from app import COUNTER, app
+import logging
+
+from swagger_server.service.api import COUNTER
 from swagger_server.service import database
 from swagger_server.util import who_am_i
 
@@ -21,5 +23,5 @@ def info_api():  # noqa: E501
         'postgis': postgis[0].replace('"', ''),
         'counter': COUNTER
     }
-    app.app.logger.info('{}: {}'.format(__name__, 'Result returned'))
+    logging.info('{}: {}'.format(__name__, 'Result returned'))
     return out

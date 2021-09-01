@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from service.models import _SearchItem, none_to_string
-from service.query import TOWNNAME_FIELDNAME, STREETNAME_FIELDNAME, \
-    TOWNPART_FIELDNAME, MAX_TEXT_COUNT, \
-    compile_address
-
 __author__ = 'Radim Jäger'
+
+from swagger_server.service.database import TOWNNAME_FIELDNAME, TOWNPART_FIELDNAME, STREETNAME_FIELDNAME
+from swagger_server.service.models import _SearchItem, none_to_string
+from swagger_server.service.querying import MAX_TEXT_COUNT, compile_address
 
 
 def get_combined_text_searches_old(items):
