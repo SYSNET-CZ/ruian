@@ -7,9 +7,9 @@ info:
   license:
     name: GNU Affero General Public License v3.0
     url: https://www.gnu.org/licenses/agpl-3.0.html
-  version: 1.0.0-oas3
+  version: 1.0.2
 servers:
-- url: https://virtserver.swaggerhub.com/sysnetcz/RUIAN/1.0.0-oas3
+- url: https://virtserver.swaggerhub.com/sysnetcz/RUIAN/1.0.2
 tags:
 - name: admins
   description: Secured Admin-only calls
@@ -18,11 +18,11 @@ tags:
 - name: public
   description: Operation available to public users
 paths:
-  /reverse/parcela/jtsk:
+  /reverse/parcel/jtsk:
     get:
       tags:
       - public
-      summary: find plot (of land) by coordinates
+      summary: find land parcel by coordinates
       description: "By passing in the appropriate options, you can search for\nthe\
         \ plot of land\n"
       operationId: parcela_api
@@ -68,7 +68,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
     post:
       tags:
@@ -104,13 +103,12 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/parcela/wgs:
+  /reverse/parcel/wgs:
     get:
       tags:
       - public
-      summary: find plot (of land) by coordinates
+      summary: find land parcel by coordinates
       description: "By passing in the appropriate options, you can search for\nthe\
         \ plot of land\n"
       operationId: parcela_wgs_api
@@ -154,7 +152,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
     post:
       tags:
@@ -190,9 +187,8 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/zsj/jtsk:
+  /reverse/settlement/jtsk:
     get:
       tags:
       - public
@@ -242,9 +238,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/zsj/wgs:
+    post:
+      tags:
+      - public
+      summary: find basic settlement unit by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ basic settlement unit\n"
+      operationId: zsj_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointJtskReq'
+      responses:
+        "200":
+          description: basic settlement unit object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zsj'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/settlement/wgs:
     get:
       tags:
       - public
@@ -292,9 +318,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/ku/jtsk:
+    post:
+      tags:
+      - public
+      summary: find basic settlement unit by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ basic settlement unit\n"
+      operationId: zsj_wgs_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointWgsReq'
+      responses:
+        "200":
+          description: basic settlement unit object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zsj'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/cadaster/jtsk:
     get:
       tags:
       - public
@@ -344,9 +400,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/ku/wgs:
+    post:
+      tags:
+      - public
+      summary: find cadastral territory by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ cadastral territory\n"
+      operationId: ku_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointJtskReq'
+      responses:
+        "200":
+          description: cadastral territory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KatastralniUzemi'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/cadaster/wgs:
     get:
       tags:
       - public
@@ -394,9 +480,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/povodi/jtsk:
+    post:
+      tags:
+      - public
+      summary: find cadastral territory by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ basic settlement unit\n"
+      operationId: ku_wgs_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointWgsReq'
+      responses:
+        "200":
+          description: cadastral territory object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KatastralniUzemi'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/basin/jtsk:
     get:
       tags:
       - public
@@ -446,9 +562,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/povodi/wgs:
+    post:
+      tags:
+      - public
+      summary: find basin info by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ basin info\n"
+      operationId: povodi_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointJtskReq'
+      responses:
+        "200":
+          description: basin info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Povodi'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/basin/wgs:
     get:
       tags:
       - public
@@ -496,9 +642,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/mapy50/jtsk:
+    post:
+      tags:
+      - public
+      summary: find basin info by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ basin info\n"
+      operationId: povodi_wgs_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointWgsReq'
+      responses:
+        "200":
+          description: basin info object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Povodi'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/sheet50/jtsk:
     get:
       tags:
       - public
@@ -548,9 +724,39 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
-  /reverse/mapy50/wgs:
+    post:
+      tags:
+      - public
+      summary: find map sheets layout by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ map sheets layout\n"
+      operationId: mapy50_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointJtskReq'
+      responses:
+        "200":
+          description: map sheets layout info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapovyList50'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /reverse/sheet50/wgs:
     get:
       tags:
       - public
@@ -598,7 +804,37 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+    post:
+      tags:
+      - public
+      summary: find map sheets layout by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ map sheets layout\n"
+      operationId: mapy50_wgs_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointWgsReq'
+      responses:
+        "200":
+          description: map sheets layout object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapovyList50'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /reverse/nearby/jtsk:
     get:
@@ -653,7 +889,40 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+    post:
+      tags:
+      - public
+      summary: find nearby adresses by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ nearby adresses\n"
+      operationId: nearby_address_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointJtskReq'
+      responses:
+        "200":
+          description: nearby adresses info object array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NearbyAddress'
+                x-content-type: application/json
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /reverse/nearby/wgs:
     get:
@@ -706,7 +975,40 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+    post:
+      tags:
+      - public
+      summary: find nearby adresses by coordinates
+      description: "By passing in the appropriate options, you can search for\nthe\
+        \ nearby adresses\n"
+      operationId: nearby_address_wgs_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointWgsReq'
+      responses:
+        "200":
+          description: nearby adresses object array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NearbyAddress'
+                x-content-type: application/json
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /convert/point/jtsk:
     get:
@@ -756,7 +1058,37 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+    post:
+      tags:
+      - public
+      summary: converts one point from WGS-84 to JTSK
+      description: "By passing in the appropriate options, you can obtain converted\
+        \ value\n"
+      operationId: convert_point_jtsk_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointWgsReq'
+      responses:
+        "200":
+          description: converted point
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointJtsk'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /convert/point/wgs:
     get:
@@ -808,7 +1140,101 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+    post:
+      tags:
+      - public
+      summary: converts one point from JTSK to WGS-84
+      description: "By passing in the appropriate options, you can obtain converted\
+        \ value\n"
+      operationId: convert_point_wgs_post_api
+      requestBody:
+        $ref: '#/components/requestBodies/PointJtskReq'
+      responses:
+        "200":
+          description: converted point
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointWgs'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /convert/polygon/jtsk:
+    post:
+      tags:
+      - public
+      summary: converts polygon from WGS84 to JTSK
+      description: "By passing in the appropriate options, you can obtain converted\
+        \ value\n"
+      operationId: convert_polygon_jtsk_api
+      requestBody:
+        $ref: '#/components/requestBodies/PolygonWgsReq'
+      responses:
+        "200":
+          description: converted polygon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolygonJtsk'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /convert/polygon/wgs:
+    post:
+      tags:
+      - public
+      summary: converts polygon from JTSK to WGS84
+      description: "By passing in the appropriate options, you can obtain converted\
+        \ value\n"
+      operationId: convert_polygon_wgs_api
+      requestBody:
+        $ref: '#/components/requestBodies/PolygonJtskReq'
+      responses:
+        "200":
+          description: converted polygon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolygonWgs'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /search/address:
     get:
@@ -851,7 +1277,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
     post:
       tags:
@@ -885,7 +1310,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /search/address/{id}:
     get:
@@ -925,7 +1349,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /compile/address:
     get:
@@ -969,7 +1392,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
     post:
       tags:
@@ -1004,7 +1426,6 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /compile/address/{id}:
     get:
@@ -1046,13 +1467,12 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /validate/address/{id}:
     get:
       tags:
       - public
-      summary: compile adresses by identifier
+      summary: validate adresses by identifier
       description: "By passing in the appropriate options, you can validate address\
         \ point\n"
       operationId: validate_address_id_api
@@ -1088,7 +1508,125 @@ paths:
                 type: string
       security:
       - apiKey: []
-      - appId: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /address/{id}:
+    get:
+      tags:
+      - public
+      summary: get addres point full info by identifier
+      description: "By passing in the appropriate options, you can obtain addres point\n"
+      operationId: get_address_id_api
+      parameters:
+      - name: id
+        in: path
+        description: Address point identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: address point and administrative division
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullAddress'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /cadaster/{id}:
+    get:
+      tags:
+      - public
+      summary: get cadastral territory full info by identifier
+      description: "By passing in the appropriate options, you can obtain cadastral\
+        \ territory\n"
+      operationId: get_ku_id_api
+      parameters:
+      - name: id
+        in: path
+        description: cadastral territory identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: basic settlement unit and administrative division
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullCadaster'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
+      x-openapi-router-controller: swagger_server.controllers.public_controller
+  /settlement/{id}:
+    get:
+      tags:
+      - public
+      summary: get basic settlement unit full info by identifier
+      description: "By passing in the appropriate options, you can obtain basic settlement\
+        \ unit\n"
+      operationId: get_zsj_id_api
+      parameters:
+      - name: id
+        in: path
+        description: basic settlement unit identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: basic settlement unit and administrative division
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullSettlement'
+        "204":
+          description: no data returned
+        "400":
+          description: bad input parameter
+        "401":
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+      security:
+      - apiKey: []
       x-openapi-router-controller: swagger_server.controllers.public_controller
   /info:
     get:
@@ -1114,6 +1652,34 @@ paths:
       x-openapi-router-controller: swagger_server.controllers.developers_controller
 components:
   schemas:
+    PolygonJtsk:
+      type: object
+      properties:
+        polygon:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointJtsk'
+      description: Geo JTSK polygon
+      example:
+        polygon:
+        - x: -773537.486
+          "y": -1068166.65742
+        - x: -773537.486
+          "y": -1068166.65742
+    PolygonWgs:
+      type: object
+      properties:
+        polygon:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointWgs'
+      description: Geo WGS84 polygon
+      example:
+        polygon:
+        - lon: 16.6159744
+          lat: 49.1830672
+        - lon: 16.6159744
+          lat: 49.1830672
     Jtsk:
       type: object
       properties:
@@ -1121,14 +1687,14 @@ components:
           type: number
           format: double
           example: -773537.486
-        y:
+        "y":
           type: number
           format: double
           example: -1068166.65742
       description: JTSK coordinates
       example:
         x: -773537.486
-        y: -1068166.65742
+        "y": -1068166.65742
     PointJtsk:
       type: object
       properties:
@@ -1136,14 +1702,14 @@ components:
           type: number
           format: double
           example: -773537.486
-        y:
+        "y":
           type: number
           format: double
           example: -1068166.65742
       description: JTSK Point
       example:
         x: -773537.486
-        y: -1068166.65742
+        "y": -1068166.65742
     Wgs:
       type: object
       properties:
@@ -1163,13 +1729,15 @@ components:
         lat:
           type: number
           format: double
+          example: 49.1830672
         lon:
           type: number
           format: double
+          example: 16.6159744
       description: WGS-84 Point
       example:
-        lon: 6.02745618307040320615897144307382404804229736328125
-        lat: 0.80082819046101150206595775671303272247314453125
+        lon: 16.6159744
+        lat: 49.1830672
     AdministrativeDivision:
       type: object
       properties:
@@ -1321,13 +1889,8 @@ components:
     Zsj:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 51
-        nazev:
-          type: string
-          example: Dolní Adršpach
+        settlement:
+          $ref: '#/components/schemas/Settlement'
         administrative_division:
           $ref: '#/components/schemas/AdministrativeDivision'
       description: objekt ZSJ
@@ -1355,8 +1918,9 @@ components:
           pou_kod: 2283
           orp_kod: 1031
           ku_kod: 600059
-        nazev: Dolní Adršpach
-        id: 51
+        settlement:
+          nazev: Dolní Adršpach
+          id: 51
     KatastralniUzemi:
       type: object
       properties:
@@ -1512,7 +2076,7 @@ components:
             lat: 49.1830672N
           jtsk:
             x: -773537.486
-            y: -1068166.65742
+            "y": -1068166.65742
         house_number: 532
         district_number: 6
         zip_code: 26801
@@ -1545,7 +2109,7 @@ components:
               lat: 49.1830672N
             jtsk:
               x: -773537.486
-              y: -1068166.65742
+              "y": -1068166.65742
           house_number: 532
           district_number: 6
           zip_code: 26801
@@ -1566,7 +2130,216 @@ components:
           lat: 49.1830672N
         jtsk:
           x: -773537.486
-          y: -1068166.65742
+          "y": -1068166.65742
+    FullAddress:
+      type: object
+      properties:
+        address_point:
+          $ref: '#/components/schemas/Address'
+        administrative_division:
+          $ref: '#/components/schemas/AdministrativeDivision'
+        basin:
+          $ref: '#/components/schemas/Povodi'
+        map50_sheet:
+          $ref: '#/components/schemas/MapovyList50'
+      description: address point and administrative division
+      example:
+        administrative_division:
+          vusc_nazev: Královéhradecký kraj
+          orp_nazev: Broumov
+          regionsoudrznosti_kod: 51
+          nuts_1: CZ
+          nuts_lau1: CZ0523
+          nuts_2: CZ05
+          nuts_lau2: CZ0523547786
+          nuts_3: CZ052
+          obec_nazev: Adršpach
+          pou_nazev: Teplice nad Metují
+          ku_nazev: Dolní Adršpach
+          obec_kod: 547786
+          okres_nazev: Náchod
+          okres_kod: 3605
+          regionsoudrznosti_nazev: Severovýchod
+          vusc_kod: 86
+          spravni_obec_nazev: Broumov
+          spravni_obec_kod: 573922
+          obec_statuskod: 2
+          pou_kod: 2283
+          orp_kod: 1031
+          ku_kod: 600059
+        address_point:
+          ruian_id: 1631217
+          orientation_number: 1
+          street: Klostermannova
+          locality_part: Hořovice
+          record_number: 0
+          district: district
+          locality: Hořovice
+          coordinates:
+            wgs:
+              lon: 16.6159744E
+              lat: 49.1830672N
+            jtsk:
+              x: -773537.486
+              "y": -1068166.65742
+          house_number: 532
+          district_number: 6
+          zip_code: 26801
+          orientation_number_character: orientation_number_character
+        map50_sheet:
+          nazev: Dvur Kralove
+          id: 03-44
+        basin:
+          chp_d: 1-11-04-0320-0-00
+          chp_u: 1-11-04-0260-1-00
+          chp: 1-11-04-0300-0-00
+          id: 4236
+          id_1: 1
+          naz_pov_1: povodí Labe
+          id_3: 49
+          naz_pov_2: Berounka od Úslavy po ústí
+          naz_tok_2: ""
+          id_2: 11
+          naz_pov_3: Litavka a Berounka od Litavky po Loděnici
+          naz_tok: Červený potok
+    CadastralTerritory:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 600059
+        nazev:
+          type: string
+          example: Dolní Adršpach
+      description: cadastral territory (KU)
+      example:
+        nazev: Dolní Adršpach
+        id: 600059
+    Settlement:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 51
+        nazev:
+          type: string
+          example: Dolní Adršpach
+      description: basic settlement unit (ZSJ)
+      example:
+        nazev: Dolní Adršpach
+        id: 51
+    FullCadaster:
+      type: object
+      properties:
+        cadastral_teritory:
+          $ref: '#/components/schemas/CadastralTerritory'
+        administrative_division:
+          $ref: '#/components/schemas/AdministrativeDivision'
+        basin:
+          $ref: '#/components/schemas/Povodi'
+        map50_sheet:
+          $ref: '#/components/schemas/MapovyList50'
+      description: cadastral territory and administrative division
+      example:
+        administrative_division:
+          vusc_nazev: Královéhradecký kraj
+          orp_nazev: Broumov
+          regionsoudrznosti_kod: 51
+          nuts_1: CZ
+          nuts_lau1: CZ0523
+          nuts_2: CZ05
+          nuts_lau2: CZ0523547786
+          nuts_3: CZ052
+          obec_nazev: Adršpach
+          pou_nazev: Teplice nad Metují
+          ku_nazev: Dolní Adršpach
+          obec_kod: 547786
+          okres_nazev: Náchod
+          okres_kod: 3605
+          regionsoudrznosti_nazev: Severovýchod
+          vusc_kod: 86
+          spravni_obec_nazev: Broumov
+          spravni_obec_kod: 573922
+          obec_statuskod: 2
+          pou_kod: 2283
+          orp_kod: 1031
+          ku_kod: 600059
+        cadastral_teritory:
+          nazev: Dolní Adršpach
+          id: 600059
+        map50_sheet:
+          nazev: Dvur Kralove
+          id: 03-44
+        basin:
+          chp_d: 1-11-04-0320-0-00
+          chp_u: 1-11-04-0260-1-00
+          chp: 1-11-04-0300-0-00
+          id: 4236
+          id_1: 1
+          naz_pov_1: povodí Labe
+          id_3: 49
+          naz_pov_2: Berounka od Úslavy po ústí
+          naz_tok_2: ""
+          id_2: 11
+          naz_pov_3: Litavka a Berounka od Litavky po Loděnici
+          naz_tok: Červený potok
+    FullSettlement:
+      type: object
+      properties:
+        settlement:
+          $ref: '#/components/schemas/Settlement'
+        administrative_division:
+          $ref: '#/components/schemas/AdministrativeDivision'
+        basin:
+          $ref: '#/components/schemas/Povodi'
+        map50_sheet:
+          $ref: '#/components/schemas/MapovyList50'
+      description: basic settlement unit and administrative division
+      example:
+        administrative_division:
+          vusc_nazev: Královéhradecký kraj
+          orp_nazev: Broumov
+          regionsoudrznosti_kod: 51
+          nuts_1: CZ
+          nuts_lau1: CZ0523
+          nuts_2: CZ05
+          nuts_lau2: CZ0523547786
+          nuts_3: CZ052
+          obec_nazev: Adršpach
+          pou_nazev: Teplice nad Metují
+          ku_nazev: Dolní Adršpach
+          obec_kod: 547786
+          okres_nazev: Náchod
+          okres_kod: 3605
+          regionsoudrznosti_nazev: Severovýchod
+          vusc_kod: 86
+          spravni_obec_nazev: Broumov
+          spravni_obec_kod: 573922
+          obec_statuskod: 2
+          pou_kod: 2283
+          orp_kod: 1031
+          ku_kod: 600059
+        map50_sheet:
+          nazev: Dvur Kralove
+          id: 03-44
+        basin:
+          chp_d: 1-11-04-0320-0-00
+          chp_u: 1-11-04-0260-1-00
+          chp: 1-11-04-0300-0-00
+          id: 4236
+          id_1: 1
+          naz_pov_1: povodí Labe
+          id_3: 49
+          naz_pov_2: Berounka od Úslavy po ústí
+          naz_tok_2: ""
+          id_2: 11
+          naz_pov_3: Litavka a Berounka od Litavky po Loděnici
+          naz_tok: Červený potok
+        settlement:
+          nazev: Dolní Adršpach
+          id: 51
   responses:
     UnauthorizedError:
       description: API key is missing or invalid
@@ -1587,7 +2360,7 @@ components:
       schema:
         type: number
         format: double
-        example: -1068317.864
+        example: -770559.237
     jtskyParam:
       name: "y"
       in: query
@@ -1598,7 +2371,7 @@ components:
       schema:
         type: number
         format: double
-        example: -770559.237
+        example: -1068317.864
     wgsLatParam:
       name: lat
       in: query
@@ -1636,15 +2409,30 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Address'
+    PointJtskReq:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PointJtsk'
+    PointWgsReq:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PointWgs'
+    PolygonJtskReq:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PolygonJtsk'
+    PolygonWgsReq:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PolygonWgs'
   securitySchemes:
     apiKey:
       type: apiKey
       name: X-API-KEY
       in: header
       x-apikeyInfoFunc: swagger_server.controllers.authorization_controller.check_apiKey
-    appId:
-      type: apiKey
-      name: X-APP-ID
-      in: header
-      x-apikeyInfoFunc: swagger_server.controllers.authorization_controller.check_appId
 

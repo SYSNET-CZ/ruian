@@ -7,6 +7,7 @@ from typing import List, Dict  # noqa: F401
 
 from swagger_server.models.base_model_ import Model
 from swagger_server.models.administrative_division import AdministrativeDivision  # noqa: F401,E501
+from swagger_server.models.settlement import Settlement  # noqa: F401,E501
 from swagger_server import util
 
 
@@ -16,30 +17,25 @@ class Zsj(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id_value: int = None, nazev: str = None,
+    def __init__(self, settlement: Settlement = None,
                  administrative_division: AdministrativeDivision = None):  # noqa: E501
         """Zsj - a model defined in Swagger
 
-        :param id_value: The id of this Zsj.  # noqa: E501
-        :type id_value: int
-        :param nazev: The nazev of this Zsj.  # noqa: E501
-        :type nazev: str
+        :param settlement: The settlement of this Zsj.  # noqa: E501
+        :type settlement: Settlement
         :param administrative_division: The administrative_division of this Zsj.  # noqa: E501
         :type administrative_division: AdministrativeDivision
         """
         self.swagger_types = {
-            'id': int,
-            'nazev': str,
+            'settlement': Settlement,
             'administrative_division': AdministrativeDivision
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'nazev': 'nazev',
+            'settlement': 'settlement',
             'administrative_division': 'administrative_division'
         }
-        self._id = id_value
-        self._nazev = nazev
+        self._settlement = settlement
         self._administrative_division = administrative_division
 
     @classmethod
@@ -54,46 +50,25 @@ class Zsj(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def id(self) -> int:
-        """Gets the id of this Zsj.
+    def settlement(self) -> Settlement:
+        """Gets the settlement of this Zsj.
 
 
-        :return: The id of this Zsj.
-        :rtype: int
+        :return: The settlement of this Zsj.
+        :rtype: Settlement
         """
-        return self._id
+        return self._settlement
 
-    @id.setter
-    def id(self, id_value: int):
-        """Sets the id of this Zsj.
-
-
-        :param id_value: The id of this Zsj.
-        :type id_value: int
-        """
-
-        self._id = id_value
-
-    @property
-    def nazev(self) -> str:
-        """Gets the nazev of this Zsj.
+    @settlement.setter
+    def settlement(self, settlement: Settlement):
+        """Sets the settlement of this Zsj.
 
 
-        :return: The nazev of this Zsj.
-        :rtype: str
-        """
-        return self._nazev
-
-    @nazev.setter
-    def nazev(self, nazev: str):
-        """Sets the nazev of this Zsj.
-
-
-        :param nazev: The nazev of this Zsj.
-        :type nazev: str
+        :param settlement: The settlement of this Zsj.
+        :type settlement: Settlement
         """
 
-        self._nazev = nazev
+        self._settlement = settlement
 
     @property
     def administrative_division(self) -> AdministrativeDivision:

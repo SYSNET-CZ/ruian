@@ -8,6 +8,7 @@
 # License:      CC BY-SA 4.0
 # -------------------------------------------------------------------------------
 # from collections import defaultdict
+import logging
 from collections import defaultdict
 from typing import List, Any
 from urllib.parse import unquote
@@ -15,7 +16,7 @@ from urllib.parse import unquote
 import psycopg2
 from lat_lon_parser import parser
 
-from app import app
+from swagger_server.models import FullAddress, FullCadaster, FullSettlement
 from swagger_server.service.common import compile_address_as_json, compile_address_as_text, compile_address_as_xml, \
     compile_address_to_one_row, number_to_string, analyse_row, right_address, TEXT_FORMAT_TEXT, TEXT_FORMAT_JSON, \
     TEXT_FORMAT_XML, TEXT_FORMAT_TEXT2ONEROW, TEXT_FORMAT_HTML2ONEROW, list_to_response_text, \
@@ -32,7 +33,7 @@ from swagger_server.service.models import AddressInternal, PovodiInternal, Coord
     ParcelaInternal, AdresniBodInternal, ZsjInternal, \
     Locality, \
     none_to_string, KatastralniUzemiInternal, MapovyList50Internal
-from swagger_server.service.utils import is_int, number_check
+from swagger_server.service.procedure import is_int, number_check, get_polygon_string, load_polygon
 
 __author__ = 'SYSNET'
 
@@ -137,7 +138,18 @@ ADRESY_COLUMNS_GET_LIST = \
     "adresnimista.ulicekod, stavebniobjekty.castobcekod, stavebniobjekty.momckod, " \
     "castiobci.nazev, castiobci.obeckod, obce.nazev, ulice.nazev, momc.nazev, " \
     "momc.mopkod, mop.nazev "
-
+ADMINISTRATIVE_DIVISION_KU_COLUMNS = \
+    "gid, nazev_ku, kod_obec, nazev_obec, kod_obec_status, kod_orp, nazev_orp, " \
+    "kod_spravniobec_orp, nazev_spravniobec_orp, kod_pou, nazev_pou, " \
+    "kod_spravniobec_pou, nazev_spravniobec_pou, kod_okres, nazev_okres, kod_vusc, nazev_vusc, " \
+    "kod_regionsoudrznosti, nazev_regionsoudrznosti, " \
+    "nuts_2, nuts_3, nuts_lau_1, nuts_lau_2 "
+ADMINISTRATIVE_DIVISION_ZSJ_COLUMNS = \
+    "gid, nazev_zsj, kod_ku, nazev_ku, kod_obec, nazev_obec, kod_obec_status, kod_orp, nazev_orp, " \
+    "kod_spravniobec_orp, nazev_spravniobec_orp, kod_pou, nazev_pou, " \
+    "kod_spravniobec_pou, nazev_spravniobec_pou, kod_okres, nazev_okres, kod_vusc, nazev_vusc, " \
+    "kod_regionsoudrznosti, nazev_regionsoudrznosti, " \
+    "nuts_2, nuts_3, nuts_lau_1, nuts_lau_2 "
 MAX_COUNT = 10
 DISTANCE_GET_ADRESA = 500
 DISTANCE_GET_NEARBY = 2000
@@ -156,6 +168,53 @@ def _convert_point_to_wgs(y, x):
         return None
     out = CoordinatesGpsInternal(lon=row[0].coords[0], lat=row[0].coords[1])
     return out
+
+
+def _convert_polygon_str(polygon_str: str, target='jtsk'):
+    source_geom = '5514'
+    target_geom = '4326'
+    if target != 'jtsk' or target != 'wgs':
+        return None
+    if target == 'wgs':
+        source_geom = '4326'
+        target_geom = '5514'
+    geom = "ST_GeomFromText('{0}',{1})".format(polygon_str, source_geom)
+    sql = "SELECT ST_AsText(ST_Transform({0}, {1})) AS {2}_polygon;".format(geom, target_geom, target)
+    cur = execute_sql(DATABASE_NAME_POVODI, sql)
+    row = cur.fetchone()
+    cur.close()
+    return row
+
+
+def _convert_polygon_str_to_wgs(polygon_str: str):
+    return _convert_polygon_str(polygon_str=polygon_str, target='wgs')
+
+
+def _convert_polygon_str_to_jtsk(polygon_str: str):
+    return _convert_polygon_str(polygon_str=polygon_str, target='jtsk')
+
+
+def _convert_polygon(polygon, target='jtsk'):
+    polygon_str = None
+    if target == 'jtsk':
+        polygon_str = get_polygon_string(polygon, geom='wgs')
+    elif target == 'wgs':
+        polygon_str = get_polygon_string(polygon, geom='jtsk')
+    if polygon_str in None:
+        return None
+    out_str = _convert_polygon_str(polygon_str=polygon_str, target=target)
+    if out_str is None:
+        return None
+    out = load_polygon(out_str, geom=target)
+    return out
+
+
+def _convert_polygon_to_jtsk(polygon):
+    return _convert_polygon(polygon=polygon, target='jtsk')
+
+
+def _convert_polygon_to_wgs(polygon):
+    return _convert_polygon(polygon=polygon, target='wgs')
 
 
 def _convert_str_wgs_to_jtsk(str_coord):
@@ -282,9 +341,9 @@ def _get_administrative_division_zsj(y, x):
 def _get_administrative_division_ku(y, x):
     __name__ = who_am_i()
     geom = geom_point(column_name="geom_polygon", x=x, y=y)
-    sql = "SELECT * FROM {0} WHERE ST_Contains({1});".format(ADMINISTRATIVE_DIVISION_KU_TABLE_NAME, geom)
+    sql = "SELECT * FROM {0} WHERE {1}({2});".format(ADMINISTRATIVE_DIVISION_KU_TABLE_NAME, 'ST_Contains', geom)
     print('SQL:', sql)
-    app.app.logger.info('{}: {} - {}'.format(__name__, 'SQL:', sql))
+    logging.info('{0}: {1} - {2}'.format(__name__, 'SQL:', sql))
     row = get_row(DATABASE_NAME_RUIAN, sql)
     if row is None:
         return None
@@ -348,10 +407,44 @@ def _get_rozvodnice_wgs(lat, lon):
     return out
 
 
+def _find_administrative_division(identifier, ad_type='ku'):
+    # Získá informace o správním členění pro ZSJ a KÚ. ad_type nabývá hodnot 'ku' nebo 'zsj'
+    __name__ = who_am_i()
+    if ad_type == 'ku':
+        table = ADMINISTRATIVE_DIVISION_KU_TABLE_NAME
+    elif ad_type == 'zsj':
+        table = ADMINISTRATIVE_DIVISION_ZSJ_TABLE_NAME
+    else:
+        logging.error('{0}: invalid administrative division type {1}'.format(__name__, type))
+        return None
+    sql = "SELECT {0} FROM {1}  WHERE {2} = {3}".format('*', table, 'gid', str(identifier))
+    print('SQL:', sql)
+    logging.info('{0}: {1} - {2}'.format(__name__, 'SQL:', sql))
+    row = get_row(DATABASE_NAME_RUIAN, sql)
+    if row is None:
+        return None
+    if ad_type == 'ku':
+        out: KatastralniUzemiInternal = KatastralniUzemiInternal(row)
+    else:
+        out: ZsjInternal = ZsjInternal(row)
+    return out
+
+
+def _find_administrative_division_zsj(identifier):
+    return _find_administrative_division(identifier=identifier, ad_type='zsj')
+
+
+def _find_administrative_division_ku(identifier):
+    return _find_administrative_division(identifier=identifier, ad_type='ku')
+
+
 def _find_address(identifier):
-    sql = "SELECT " + ADDRESSPOINTS_COLUMNS_FIND + \
-          " FROM " + ADDRESSPOINTS_TABLE_NAME + \
-          " WHERE gid = " + str(identifier)
+    sql = "SELECT {0} FROM {1}  WHERE {2} = {3}".format(
+        ADDRESSPOINTS_COLUMNS_FIND,
+        ADDRESSPOINTS_TABLE_NAME,
+        'gid',
+        str(identifier)
+    )
     cur = execute_sql(DATABASE_NAME_RUIAN, sql)
     row = cur.fetchone()
     if row:
@@ -527,10 +620,6 @@ def _find_locality(identifier, details=True):  # identifikator adresniho bodu
     return locality
 
 
-
-
-
-
 def geocode_id(address_id):
     locality = _find_locality(address_id)
     return locality
@@ -582,10 +671,13 @@ def dictionary_to_locality(dictionary):
         if dictionary[ADDR_X] and dictionary[ADDR_Y]:
             coordinates = CoordinatesInternal(dictionary[ADDR_Y], dictionary[ADDR_X])
         address = AddressInternal(
-            dictionary[ADDR_STREET], dictionary[ADDR_HOUSE_NUMBER], dictionary[ADDR_RECORD_NUMBER],
-            dictionary[ADDR_ORIENTATION_NUMBER], dictionary[ADDR_ORIENTATION_NUMBER_CHARACTER],
-            dictionary[ADDR_ZIP_CODE], dictionary[ADDR_LOCALITY], dictionary[ADDR_LOCALITY_PART],
-            dictionary[ADDR_DISTRICT_NUMBER], dictionary[ADDR_DISTRICT], dictionary[ADDR_ID]
+            street=dictionary[ADDR_STREET], house_number=dictionary[ADDR_HOUSE_NUMBER],
+            record_number=dictionary[ADDR_RECORD_NUMBER], orientation_number=dictionary[ADDR_ORIENTATION_NUMBER],
+            orientation_number_character=dictionary[ADDR_ORIENTATION_NUMBER_CHARACTER],
+            zip_code=dictionary[ADDR_ZIP_CODE], locality=dictionary[ADDR_LOCALITY],
+            locality_part=dictionary[ADDR_LOCALITY_PART], district_number=dictionary[ADDR_DISTRICT_NUMBER],
+            district=dictionary[ADDR_DISTRICT], ruian_id=dictionary[ADDR_ID],
+            jtsk_x=coordinates.x, jtsk_y=coordinates.y
         )
         locality = Locality(address, coordinates)
     return locality
@@ -669,8 +761,12 @@ def _find_coordinates_by_address(dictionary):
             # latitude, longitude, gid, nazev_obce, nazev_casti_obce, nazev_ulice, cislo_domovni, typ_so,
             # cislo_orientacni, znak_cisla_orientacniho, psc, nazev_mop
             coord = CoordinatesInternal(row[0], row[1])
-            addr = AddressInternal(row[5], house_number, record_number, row[8], row[9], row[10], row[3], row[4], None, row[11],
-                                   row[2])
+            addr = AddressInternal(
+                street=row[5], house_number=house_number, record_number=record_number,
+                orientation_number=row[8], orientation_number_character=row[9], zip_code=row[10],
+                locality=row[3], locality_part=row[4], district_number=None, district=row[11],
+                ruian_id=row[2], jtsk_y=coord.y, jtsk_x=coord.x
+            )
             loc = Locality(addr, coord)
             localities.append(loc)
         else:
@@ -788,6 +884,33 @@ def compile_address_id(identifier):
     return out
 
 
+def _get_adresses_list(dictionary, with_ruian_id=True):
+    work_list = []
+    rows = _get_addresses(dictionary)
+    print("ROWS: ", rows)
+    if len(rows) > 0:
+        for row in rows:
+            work = {}
+            (
+                work['house_number'], work['orientation_number'], work['orientation_number_character'],
+                work['zip_code'], work['locality'], work['locality_part'], work['nazev_mop'], work['street'],
+                work['typ_so'], work['ruian_id']
+            ) = row
+            work['record_number'] = ''
+            work['district_number'] = ''
+            work['district'] = ''
+            if work['typ_so'] != "č.p.":
+                work['record_number'] = work['house_number']
+                work['house_number'] = ""
+            if work['nazev_mop'] is not None and work['nazev_mop'] != "":
+                work['district_number'] = work['nazev_mop'][work['nazev_mop'].find(" ") + 1:]
+                work['district'] = work['nazev_mop']
+            if not with_ruian_id:
+                work['ruian_id'] = ""
+            work_list.append(work)
+    return work_list
+
+
 # noinspection DuplicatedCode
 def compile_address(
         text_format, street, house_number, record_number, orientation_number, orientation_number_character,
@@ -812,39 +935,16 @@ def compile_address(
         zip_code, locality, locality_part, district_number, district_name
     )
     print("DICTIONARY: ", dictionary)
-    work = {}
+    # work = {}
     work_list = []
     if do_validate or with_ruian_id:
-        rows = _get_addresses(dictionary)
-        print("ROWS: ", rows)
-        if len(rows) > 0:
-            for row in rows:
-                work = {}
-                (
-                    work['house_number'], work['orientation_number'], work['orientation_number_character'],
-                    work['zip_code'], work['locality'], work['locality_part'], work['nazev_mop'], work['street'],
-                    work['typ_so'], work['ruian_id']
-                ) = row
-                work['record_number'] = ''
-                work['district_number'] = ''
-                if work['typ_so'] != "č.p.":
-                    work['record_number'] = work['house_number']
-                    work['house_number'] = ""
-                if work['nazev_mop'] is not None and work['nazev_mop'] != "":
-                    work['district_number'] = work['nazev_mop'][work['nazev_mop'].find(" ") + 1:]
-                if not with_ruian_id:
-                    work['ruian_id'] = ""
-                work_list.append(work)
-        else:
-            # TODO OPRAVDU????
-            return ""
+        work_list = _get_adresses_list(dictionary=dictionary, with_ruian_id=with_ruian_id)
     else:
         dictionary['ruian_id'] = ""
         work_list.append(dictionary)
-
     out_list = []
     for work in work_list:
-        out = None
+        # out = None
         if text_format is None or text_format == "" or text_format == TEXT_FORMAT_TEXT:
             out = str((
                 work['street'], work['house_number'], work['record_number'], work['orientation_number'],
@@ -907,32 +1007,7 @@ def search_address(
         zip_code, locality, locality_part, district_number, district_name
     )
     print("DICTIONARY: ", dictionary)
-    work = {}
-    work_list = []
-    rows = _get_addresses(dictionary)
-    print("ROWS: ", rows)
-    if len(rows) > 0:
-        for row in rows:
-            work = {}
-            (
-                work['house_number'], work['orientation_number'], work['orientation_number_character'],
-                work['zip_code'], work['locality'], work['locality_part'], work['nazev_mop'], work['street'],
-                work['typ_so'], work['ruian_id']
-            ) = row
-            work['record_number'] = ''
-            work['district_number'] = ''
-            work['district'] = ''
-            if work['typ_so'] != "č.p.":
-                work['record_number'] = work['house_number']
-                work['house_number'] = ''
-            if work['nazev_mop'] is not None and work['nazev_mop'] != "":
-                work['district_number'] = work['nazev_mop'][work['nazev_mop'].find(" ") + 1:]
-                work['district'] = work['nazev_mop']
-            work_list.append(work)
-    else:
-        # TODO OPRAVDU????
-        return None
-
+    work_list = _get_adresses_list(dictionary=dictionary)
     out_list = []
     for work in work_list:
         out = AddressInternal(
@@ -1353,3 +1428,80 @@ def compare(items, field_values):
         if not found:
             return 0
     return sum_match_percent / num_matches
+
+
+def _get_full_address(identifier: int):
+    # na základě identifikátoru adresního bodu vrácí úplnou adresu
+    __name__ = who_am_i()
+    if identifier is None:
+        return None
+    adr = _find_address(identifier=identifier)
+    if adr is None:
+        logging.info('{0}: addresspoint {1} not found.'.format(__name__, identifier))
+        return None
+    zsj = _get_administrative_division_zsj(y=adr.jtsk_y, x=adr.jtsk_x)
+    if zsj is None:
+        logging.error('{0}: settlement not found for addresspoint {1}.'.format(__name__, identifier))
+        return None
+    roz = _get_rozvodnice(y=adr.jtsk_y, x=adr.jtsk_x)
+    if roz is None:
+        logging.error('{0}: basin not found for addresspoint {1}.'.format(__name__, identifier))
+        return None
+    mapsheet = _get_map_sheet_50(y=adr.jtsk_y, x=adr.jtsk_x)
+    if mapsheet is None:
+        logging.error('{0}: map sheet not found for addresspoint {1}.'.format(__name__, identifier))
+        return None
+    out = FullAddress()
+    out.address_point = adr.to_swagger
+    out.administrative_division = zsj.administrative_division
+    out.basin = roz.to_swagger
+    out.map50_sheet = mapsheet.to_swagger
+    return out
+
+
+def _get_full_cadaster(identifier: int):
+    __name__ = who_am_i()
+    if identifier is None:
+        return None
+    ku = _find_administrative_division_ku(identifier=identifier)
+    if ku is None:
+        logging.info('{0}: cadastral teritory {1} not found.'.format(__name__, identifier))
+        return None
+    roz = _get_rozvodnice(y=ku.jtsk_y, x=ku.jtsk_x)
+    if roz is None:
+        logging.error('{0}: basin not found for cadastral teritory {1}.'.format(__name__, identifier))
+        return None
+    mapsheet = _get_map_sheet_50(y=ku.jtsk_y, x=ku.jtsk_x)
+    if mapsheet is None:
+        logging.error('{0}: map sheet not found for cadastral teritory {1}.'.format(__name__, identifier))
+        return None
+    out = FullCadaster()
+    out.administrative_division = ku.administrative_division
+    out.basin = roz.to_swagger
+    out.map50_sheet = mapsheet.to_swagger
+    out.cadastral_teritory = ku.cadastral_territory
+    return out
+
+
+def _get_full_settlement(identifier: int):
+    __name__ = who_am_i()
+    if identifier is None:
+        return None
+    zsj = _find_administrative_division_zsj(identifier=identifier)
+    if zsj is None:
+        logging.info('{0}: settlement {1} not found.'.format(__name__, identifier))
+        return None
+    roz = _get_rozvodnice(y=zsj.jtsk_y, x=zsj.jtsk_x)
+    if roz is None:
+        logging.error('{0}: basin not found for settlement {1}.'.format(__name__, identifier))
+        return None
+    mapsheet = _get_map_sheet_50(y=zsj.jtsk_y, x=zsj.jtsk_x)
+    if mapsheet is None:
+        logging.error('{0}: map sheet not found for settlement {1}.'.format(__name__, identifier))
+        return None
+    out = FullSettlement()
+    out.basin = roz.to_swagger
+    out.map50_sheet = mapsheet.to_swagger
+    out.administrative_division = zsj.administrative_division
+    out.settlement = zsj.settlement
+    return out

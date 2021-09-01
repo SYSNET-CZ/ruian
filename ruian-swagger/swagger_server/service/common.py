@@ -187,7 +187,8 @@ def str_is_not_empty(v):
 
 
 def compile_address_as_text(street, house_number, record_number, orientation_number, orientation_number_character,
-                            zip_code, locality, locality_part, district_number, district_name, ruian_id=""):
+                            zip_code, locality, locality_part, district_number, district_name, ruian_id='',
+                            jtsk_x='', jtsk_y=''):
     """
     Sestaví adresu dle hodnot v parametrech, prázdný parametr je "" nebo None.
 
@@ -205,8 +206,11 @@ def compile_address_as_text(street, house_number, record_number, orientation_num
 
     try:
         pretty_address = PrettyAddressInternal(
-            street, house_number, record_number, orientation_number, orientation_number_character, zip_code,
-            locality, locality_part, district_number, district_name, ruian_id)
+            street=street, house_number=house_number, record_number=record_number,
+            orientation_number=orientation_number, orientation_number_character=orientation_number_character,
+            zip_code=zip_code, locality=locality, locality_part=locality_part,
+            district_number=district_number, district=district_name, ruian_id=ruian_id,
+            jtsk_x=jtsk_x, jtsk_y=jtsk_y)
         lines = pretty_address.get_lines()
     except (ValueError, Exception) as e:
         print(e.pgerror)
