@@ -49,7 +49,7 @@ services:
       - TZ=Europe/Prague
     restart: unless-stopped
   service-102:
-    image: sysnetcz/ruian-swagger:1.0.2
+    image: sysnetcz/ruian-swagger:1.0.2a
     container_name: ruian-service-102
     hostname: ruian-service-102
     domainname: ruian.docker

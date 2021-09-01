@@ -198,7 +198,7 @@ class MapovyList50Internal:
     def __init__(self, row: tuple):
         if row is not None:
             self.id = row[0]
-            self.nazev = row[2]
+            self.nazev = row[3]
 
     @property
     def to_json(self):
