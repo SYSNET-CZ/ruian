@@ -54,7 +54,7 @@ services:
     hostname: ruian-service-102
     domainname: ruian.docker
     ports:
-    - 127.0.0.1:5005:8080
+    - 127.0.0.1:5001:8080
     networks:
       default:
         aliases:
