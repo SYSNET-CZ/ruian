@@ -14,13 +14,7 @@ class AdministrativeDivision(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, ku_kod: int = None, ku_nazev: str = None, obec_kod: int = None, obec_nazev: str = None,
-                 obec_statuskod: int = None, orp_kod: int = None, orp_nazev: str = None, spravni_obec_kod: int = None,
-                 spravni_obec_nazev: str = None, pou_kod: int = None, pou_nazev: str = None, okres_kod: int = None,
-                 okres_nazev: str = None, vusc_kod: int = None, vusc_nazev: str = None,
-                 regionsoudrznosti_kod: int = None, regionsoudrznosti_nazev: str = None, nuts_1: str = None,
-                 nuts_2: str = None, nuts_3: str = None, nuts_lau1: str = None, nuts_lau2: str = None):  # noqa: E501
+    def __init__(self, ku_kod: int=None, ku_nazev: str=None, obec_kod: int=None, obec_nazev: str=None, obec_statuskod: int=None, orp_kod: int=None, orp_nazev: str=None, spravni_obec_kod: int=None, spravni_obec_nazev: str=None, pou_kod: int=None, pou_nazev: str=None, okres_kod: int=None, okres_nazev: str=None, vusc_kod: int=None, vusc_nazev: str=None, regionsoudrznosti_kod: int=None, regionsoudrznosti_nazev: str=None, nuts_1: str=None, nuts_2: str=None, nuts_3: str=None, nuts_lau1: str=None, nuts_lau2: str=None):  # noqa: E501
         """AdministrativeDivision - a model defined in Swagger
 
         :param ku_kod: The ku_kod of this AdministrativeDivision.  # noqa: E501

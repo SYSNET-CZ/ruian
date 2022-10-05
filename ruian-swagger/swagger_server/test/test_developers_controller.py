@@ -2,6 +2,9 @@
 
 from __future__ import absolute_import
 
+from flask import json
+from six import BytesIO
+
 from swagger_server.test import BaseTestCase
 
 
@@ -14,7 +17,7 @@ class TestDevelopersController(BaseTestCase):
         get service info
         """
         response = self.client.open(
-            '/sysnetcz/RUIAN/1.0.0-oas3/info',
+            '/SYSNET/RUIAN/1.0.2/info',
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

@@ -15,13 +15,11 @@ class KatastralniUzemi(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, id_value: int = None, nazev: str = None,
-                 administrative_division: AdministrativeDivision = None):  # noqa: E501
+    def __init__(self, id: int=None, nazev: str=None, administrative_division: AdministrativeDivision=None):  # noqa: E501
         """KatastralniUzemi - a model defined in Swagger
 
-        :param id_value: The id of this KatastralniUzemi.  # noqa: E501
-        :type id_value: int
+        :param id: The id of this KatastralniUzemi.  # noqa: E501
+        :type id: int
         :param nazev: The nazev of this KatastralniUzemi.  # noqa: E501
         :type nazev: str
         :param administrative_division: The administrative_division of this KatastralniUzemi.  # noqa: E501
@@ -38,7 +36,7 @@ class KatastralniUzemi(Model):
             'nazev': 'nazev',
             'administrative_division': 'administrative_division'
         }
-        self._id = id_value
+        self._id = id
         self._nazev = nazev
         self._administrative_division = administrative_division
 
@@ -64,15 +62,15 @@ class KatastralniUzemi(Model):
         return self._id
 
     @id.setter
-    def id(self, id_value: int):
+    def id(self, id: int):
         """Sets the id of this KatastralniUzemi.
 
 
-        :param id_value: The id of this KatastralniUzemi.
-        :type id_value: int
+        :param id: The id of this KatastralniUzemi.
+        :type id: int
         """
 
-        self._id = id_value
+        self._id = id
 
     @property
     def nazev(self) -> str:

@@ -15,13 +15,11 @@ class Parcela(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, id_value: int = None, kmenovecislo: int = None, pododdelenicisla: int = None,
-                 vymeraparcely: float = None, administrative_division: AdministrativeDivision = None):  # noqa: E501
+    def __init__(self, id: int=None, kmenovecislo: int=None, pododdelenicisla: int=None, vymeraparcely: float=None, administrative_division: AdministrativeDivision=None):  # noqa: E501
         """Parcela - a model defined in Swagger
 
-        :param id_value: The id of this Parcela.  # noqa: E501
-        :type id_value: int
+        :param id: The id of this Parcela.  # noqa: E501
+        :type id: int
         :param kmenovecislo: The kmenovecislo of this Parcela.  # noqa: E501
         :type kmenovecislo: int
         :param pododdelenicisla: The pododdelenicisla of this Parcela.  # noqa: E501
@@ -46,7 +44,7 @@ class Parcela(Model):
             'vymeraparcely': 'vymeraparcely',
             'administrative_division': 'administrative_division'
         }
-        self._id = id_value
+        self._id = id
         self._kmenovecislo = kmenovecislo
         self._pododdelenicisla = pododdelenicisla
         self._vymeraparcely = vymeraparcely
@@ -74,15 +72,15 @@ class Parcela(Model):
         return self._id
 
     @id.setter
-    def id(self, id_value: int):
+    def id(self, id: int):
         """Sets the id of this Parcela.
 
 
-        :param id_value: The id of this Parcela.
-        :type id_value: int
+        :param id: The id of this Parcela.
+        :type id: int
         """
 
-        self._id = id_value
+        self._id = id
 
     @property
     def kmenovecislo(self) -> int:

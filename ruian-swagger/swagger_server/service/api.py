@@ -1,11 +1,9 @@
-import logging
-
+from settings import who_am_i, LOG
 from swagger_server.models import NearbyAddress
 from swagger_server.service.conversion import string_wgs_to_jtsk
 from swagger_server.service.geolocation_reverse import get_ku, get_maplist, get_nearby, get_parcela, get_zsj, get_povodi
 from swagger_server.service.models import CoordinatesInternal
 from swagger_server.service.querying import compile_address
-from swagger_server.util import who_am_i
 
 
 def compile_adr(adr):
@@ -29,7 +27,7 @@ def compile_adr(adr):
         )
         out = work
     else:
-        logging.error('{}: {}'.format(__name__, 'Input address is missing'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Input address is missing'))
     return out
 
 
@@ -41,9 +39,9 @@ def convert_point_jtsk(lat, lon):
         jtsk = string_wgs_to_jtsk(s)
         if jtsk is not None:
             out = CoordinatesInternal(x=jtsk.x, y=jtsk.y)
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -54,11 +52,11 @@ def ku(x, y):
         out = get_ku(y=y, x=x)
         if out is not None:
             out = out.to_swagger
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
         else:
-            logging.error('{}: {} x={}, y={}'.format(__name__, 'No data found for: ', x, y))
+            LOG.logger.error('{}: {} x={}, y={}'.format(__name__, 'No data found for: ', x, y))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -70,7 +68,7 @@ def ku_wgs(lat, lon):
         jtsk = string_wgs_to_jtsk(s)
         out = ku(x=jtsk.x, y=jtsk.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -81,9 +79,9 @@ def mapy50(x, y):
         out = get_maplist(y=y, x=x)
         if out is not None:
             out = out.to_swagger
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -95,7 +93,7 @@ def mapy50_wgs(lat, lon):
         jtsk = string_wgs_to_jtsk(s)
         out = mapy50(x=jtsk.x, y=jtsk.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -112,9 +110,9 @@ def nearby_address(x, y):
                 order=work['order'], distance=work['distance'], address=work['address'].to_swagger
             )
             out_list.append(out)
-        logging.info('{}: {}'.format(__name__, 'Result returned'))
+        LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out_list
 
 
@@ -126,7 +124,7 @@ def nearby_address_wgs(lat, lon):
         jtsk = string_wgs_to_jtsk(s)
         out = nearby_address(x=jtsk.x, y=jtsk.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -137,9 +135,9 @@ def parcela(x, y):
         out = get_parcela(y=y, x=x)
         if out is not None:
             out = out.to_swagger
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -151,7 +149,7 @@ def parcela_wgs(lat, lon):
         jtsk = string_wgs_to_jtsk(s)
         out = parcela(x=jtsk.x, y=jtsk.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -171,9 +169,9 @@ def zsj(x, y):
         out = get_zsj(y=y, x=x)
         if out is not None:
             out = out.to_swagger
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -184,7 +182,7 @@ def zsj_wgs(lat, lon):
     if jtsk is not None:
         out = zsj(x=jtsk.x, y=jtsk.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -195,9 +193,9 @@ def povodi(x, y):
         out = get_povodi(y=y, x=x)
         if out is not None:
             out = out.to_swagger
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -208,7 +206,7 @@ def povodi_wgs(lat, lon):
     if jtsk is not None:
         out = povodi(x=jtsk.x, y=jtsk.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 

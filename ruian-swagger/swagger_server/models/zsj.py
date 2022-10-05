@@ -16,9 +16,7 @@ class Zsj(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, settlement: Settlement = None,
-                 administrative_division: AdministrativeDivision = None):  # noqa: E501
+    def __init__(self, settlement: Settlement=None, administrative_division: AdministrativeDivision=None):  # noqa: E501
         """Zsj - a model defined in Swagger
 
         :param settlement: The settlement of this Zsj.  # noqa: E501

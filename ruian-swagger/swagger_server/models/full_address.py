@@ -18,9 +18,7 @@ class FullAddress(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, address_point: Address = None, administrative_division: AdministrativeDivision = None,
-                 basin: Povodi = None, map50_sheet: MapovyList50 = None):  # noqa: E501
+    def __init__(self, address_point: Address=None, administrative_division: AdministrativeDivision=None, basin: Povodi=None, map50_sheet: MapovyList50=None):  # noqa: E501
         """FullAddress - a model defined in Swagger
 
         :param address_point: The address_point of this FullAddress.  # noqa: E501

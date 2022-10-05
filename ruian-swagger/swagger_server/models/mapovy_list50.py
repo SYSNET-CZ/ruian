@@ -14,12 +14,11 @@ class MapovyList50(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, id_value: str = None, nazev: str = None):  # noqa: E501
+    def __init__(self, id: str=None, nazev: str=None):  # noqa: E501
         """MapovyList50 - a model defined in Swagger
 
-        :param id_value: The id of this MapovyList50.  # noqa: E501
-        :type id_value: str
+        :param id: The id of this MapovyList50.  # noqa: E501
+        :type id: str
         :param nazev: The nazev of this MapovyList50.  # noqa: E501
         :type nazev: str
         """
@@ -32,7 +31,7 @@ class MapovyList50(Model):
             'id': 'id',
             'nazev': 'nazev'
         }
-        self._id = id_value
+        self._id = id
         self._nazev = nazev
 
     @classmethod
@@ -57,15 +56,15 @@ class MapovyList50(Model):
         return self._id
 
     @id.setter
-    def id(self, id_value: str):
+    def id(self, id: str):
         """Sets the id of this MapovyList50.
 
 
-        :param id_value: The id of this MapovyList50.
-        :type id_value: str
+        :param id: The id of this MapovyList50.
+        :type id: str
         """
 
-        self._id = id_value
+        self._id = id
 
     @property
     def nazev(self) -> str:
