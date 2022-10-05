@@ -1,7 +1,6 @@
-import logging
-
 import connexion
 
+from settings import LOG, who_am_i
 from swagger_server.models import PolygonWgs, PolygonJtsk
 from swagger_server.models.address import Address  # noqa: E501
 from swagger_server.models.jtsk import Jtsk  # noqa: E501
@@ -22,7 +21,6 @@ from swagger_server.service.conversion import point2wgs, polygon2wgs, polygon2jt
     get_full_settlement
 from swagger_server.service.querying import full_text_search_address_object, search_address
 from swagger_server.service.ruian_connection import find_address
-from swagger_server.util import who_am_i
 
 
 def compile_address_api(body=None):  # noqa: E501
@@ -40,12 +38,12 @@ def compile_address_api(body=None):  # noqa: E501
     if connexion.request.is_json:
         body = Address.from_dict(connexion.request.get_json())  # noqa: E501
     else:
-        logging.error('compile_address_api: {}'.format('Missing input data'))
+        LOG.logger.error('compile_address_api: {}'.format('Missing input data'))
     out = compile_adr(body)
     if out is not None:
-        logging.info('compile_address_api: {}'.format('Address compiled'))
+        LOG.logger.info('compile_address_api: {}'.format('Address compiled'))
     else:
-        logging.warning('compile_address_api: {}'.format('Address cannot be compiled'))
+        LOG.logger.warning('compile_address_api: {}'.format('Address cannot be compiled'))
     return out
 
 
@@ -62,11 +60,11 @@ def compile_address_ft_api(query):  # noqa: E501
     __name__ = who_am_i()
     COUNTER[__name__] += 1
     if query is None:
-        logging.error('{}: {}'.format(__name__, 'Missing input query'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input query'))
         return None
     adr_list = full_text_search_address_object(query)
     if adr_list is None:
-        logging.info('{}: {}'.format(__name__, 'Nothing found'))
+        LOG.logger.info('{}: {}'.format(__name__, 'Nothing found'))
         return None
     out_list = []
     for adr in adr_list:
@@ -83,7 +81,7 @@ def compile_address_ft_api(query):  # noqa: E501
             ruian_id=adr.ruian_id
         )
         out_list.append(out)
-    logging.info('{}: {}'.format(__name__, 'Result returned'))
+    LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     return out_list
 
 
@@ -100,10 +98,10 @@ def compile_address_id_api(id_):  # noqa: E501
     __name__ = who_am_i()
     COUNTER[__name__] += 1
     if id_ is not None:
-        logging.info('{}: {}'.format(__name__, 'Result returned'))
+        LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
         return querying.compile_address_id(id_)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing identifier'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing identifier'))
     return None
 
 
@@ -143,7 +141,7 @@ def convert_point_jtsk_post_api(body=None):  # noqa: E501
         body = PointWgs.from_dict(connexion.request.get_json())  # noqa: E501
         out = convert_point_jtsk(lat=str(body.lat), lon=str(body.lon))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -164,9 +162,9 @@ def convert_point_wgs_api(x, y):  # noqa: E501
     out = None
     if x is not None and y is not None:
         out = point2wgs(y=y, x=x)
-        logging.info('{0}: {1}'.format(__name__, 'Result returned'))
+        LOG.logger.info('{0}: {1}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -189,11 +187,11 @@ def convert_point_wgs_post_api(body=None):  # noqa: E501
         body = PointJtsk.from_dict(connexion.request.get_json())  # noqa: E501
         if (body.x is not None) and (body.y is not None):
             out = point2wgs(y=str(body.y), x=str(body.x))
-            logging.info('{0}: {1}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{0}: {1}'.format(__name__, 'Result returned'))
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -216,11 +214,11 @@ def convert_polygon_jtsk_api(body=None):  # noqa: E501
         body = PolygonWgs.from_dict(connexion.request.get_json())  # noqa: E501
         if body.polygon is not None:
             out = polygon2jtsk(body.polygon)
-            logging.info('{0}: {1}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{0}: {1}'.format(__name__, 'Result returned'))
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input polygon'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input polygon'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -243,11 +241,11 @@ def convert_polygon_wgs_api(body=None):  # noqa: E501
         body = PolygonJtsk.from_dict(connexion.request.get_json())  # noqa: E501
         if body.polygon is not None:
             out = polygon2wgs(body.polygon)
-            logging.info('{0}: {1}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{0}: {1}'.format(__name__, 'Result returned'))
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input polygon'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input polygon'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -267,9 +265,9 @@ def get_address_id_api(id_):  # noqa: E501
     out = None
     if id_ is not None:
         out = get_full_address(identifier=id_)
-        logging.info('{}: {}'.format(__name__, 'Result returned'))
+        LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -289,9 +287,9 @@ def get_ku_id_api(id_):  # noqa: E501
     out = None
     if id_ is not None:
         out = get_full_cadaster(identifier=id_)
-        logging.info('{}: {}'.format(__name__, 'Result returned'))
+        LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -311,9 +309,9 @@ def get_zsj_id_api(id_):  # noqa: E501
     out = None
     if id_ is not None:
         out = get_full_settlement(identifier=id_)
-        logging.info('{}: {}'.format(__name__, 'Result returned'))
+        LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -353,7 +351,7 @@ def ku_post_api(body=None):  # noqa: E501
         body = PointJtsk.from_dict(connexion.request.get_json())  # noqa: E501
         out = ku(x=body.x, y=body.y)
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -394,9 +392,9 @@ def ku_wgs_post_api(body=None):  # noqa: E501
         if body is not None:
             out = ku_wgs(lat=str(body.lat), lon=str(body.lon))
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -437,9 +435,9 @@ def mapy50_post_api(body=None):  # noqa: E501
         if body is not None:
             out = mapy50(x=body.x, y=body.y)
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -480,9 +478,9 @@ def mapy50_wgs_post_api(body=None):  # noqa: E501
         if body is not None:
             out = mapy50_wgs(lat=str(body.lat), lon=str(body.lon))
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -523,9 +521,9 @@ def nearby_address_post_api(body=None):  # noqa: E501
         if body is not None:
             out = nearby_address(x=body.x, y=body.y)
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -566,9 +564,9 @@ def nearby_address_wgs_post_api(body=None):  # noqa: E501
         if body is not None:
             out = nearby_address_wgs(lat=str(body.lat), lon=str(body.lat))
         else:
-            logging.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{0}: {1}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{0}: {1}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -608,7 +606,7 @@ def parcela_post_api(body=None):  # noqa: E501
         body = Jtsk.from_dict(connexion.request.get_json())  # noqa: E501
         out = parcela(x=body.x, y=body.y)
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     return out
 
 
@@ -649,9 +647,9 @@ def parcela_wgs_post_api(body=None):  # noqa: E501
         if (body.lat is not None) and (body.lon is not None):
             out = parcela_wgs(lat=body.lat, lon=body.lon)
         else:
-            logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -692,9 +690,9 @@ def povodi_post_api(body=None):  # noqa: E501
         if body is not None:
             out = povodi(x=body.x, y=body.y)
         else:
-            logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -735,9 +733,9 @@ def povodi_wgs_post_api(body=None):  # noqa: E501
         if body is not None:
             out = povodi_wgs(lat=str(body.lat), lon=str(body.lat))
         else:
-            logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -759,7 +757,7 @@ def search_address_api(body=None):  # noqa: E501
     if connexion.request.is_json:
         body = Address.from_dict(connexion.request.get_json())  # noqa: E501
         if body is None:
-            logging.error('{}: {}'.format(__name__, 'Missing input JSON data'))
+            LOG.logger.error('{}: {}'.format(__name__, 'Missing input JSON data'))
             return None
         work_list = search_address(
             street=body.street, locality_part=body.locality_part, locality=body.locality, zip_code=body.zip_code,
@@ -771,9 +769,9 @@ def search_address_api(body=None):  # noqa: E501
             out_list = []
             for work in work_list:
                 out_list.append(work.to_swagger)
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out_list
 
 
@@ -790,7 +788,7 @@ def search_address_ft_api(query):  # noqa: E501
     __name__ = who_am_i()
     COUNTER[__name__] += 1
     if query is None:
-        logging.error('{}: {}'.format(__name__, 'Missing input query'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input query'))
         return None
     adr_list = full_text_search_address_object(query)
     if adr_list is None:
@@ -798,7 +796,7 @@ def search_address_ft_api(query):  # noqa: E501
     out_list = []
     for adr in adr_list:
         out_list.append(adr.to_swagger)
-    logging.info('{}: {}'.format(__name__, 'Result returned'))
+    LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
     return out_list
 
 
@@ -817,13 +815,13 @@ def search_address_id_api(id_):  # noqa: E501
     if id_ is not None:
         adr = find_address(id_)
         if adr is not None:
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
             return adr.to_swagger
         else:
-            logging.error('{}: Address point {} not found'.format(__name__, id_))
+            LOG.logger.error('{}: Address point {} not found'.format(__name__, id_))
             return None
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing identifier'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing identifier'))
     return None
 
 
@@ -842,10 +840,10 @@ def validate_address_id_api(id_):  # noqa: E501
     if id_ is not None:
         out = find_address(identifier=id_)
         if out is not None:
-            logging.info('{}: {}'.format(__name__, 'Result returned'))
+            LOG.logger.info('{}: {}'.format(__name__, 'Result returned'))
             return True
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing identifier'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing identifier'))
     return False
 
 
@@ -886,9 +884,9 @@ def zsj_post_api(body=None):  # noqa: E501
         if body is not None:
             out = zsj(x=body.x, y=body.y)
         else:
-            logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out
 
 
@@ -929,7 +927,7 @@ def zsj_wgs_post_api(body=None):  # noqa: E501
         if body is not None:
             out = zsj_wgs(lat=str(body.lat), lon=str(body.lon))
         else:
-            logging.error('{}: {}'.format(__name__, 'Missing input coordinates'))
+            LOG.logger.error('{}: {}'.format(__name__, 'Missing input coordinates'))
     else:
-        logging.error('{}: {}'.format(__name__, 'Missing input data'))
+        LOG.logger.error('{}: {}'.format(__name__, 'Missing input data'))
     return out

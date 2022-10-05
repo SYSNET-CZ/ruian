@@ -16,8 +16,7 @@ class Coordinates(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, jtsk: Jtsk = None, wgs: Wgs = None):  # noqa: E501
+    def __init__(self, jtsk: Jtsk=None, wgs: Wgs=None):  # noqa: E501
         """Coordinates - a model defined in Swagger
 
         :param jtsk: The jtsk of this Coordinates.  # noqa: E501

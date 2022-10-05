@@ -14,8 +14,7 @@ class PointJtsk(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, x: float = None, y: float = None):  # noqa: E501
+    def __init__(self, x: float=None, y: float=None):  # noqa: E501
         """PointJtsk - a model defined in Swagger
 
         :param x: The x of this PointJtsk.  # noqa: E501

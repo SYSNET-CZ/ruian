@@ -15,8 +15,7 @@ class NearbyAddress(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, order: int = None, distance: float = None, address: Address = None):  # noqa: E501
+    def __init__(self, order: int=None, distance: float=None, address: Address=None):  # noqa: E501
         """NearbyAddress - a model defined in Swagger
 
         :param order: The order of this NearbyAddress.  # noqa: E501

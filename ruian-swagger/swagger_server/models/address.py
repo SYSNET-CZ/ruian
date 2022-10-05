@@ -15,11 +15,7 @@ class Address(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, street: str = None, house_number: int = None, record_number: int = None,
-                 orientation_number: int = None, orientation_number_character: str = None, zip_code: int = None,
-                 locality: str = None, locality_part: str = None, district_number: int = None, district: str = None,
-                 ruian_id: int = None, coordinates: Coordinates = None):  # noqa: E501
+    def __init__(self, street: str=None, house_number: int=None, record_number: int=None, orientation_number: int=None, orientation_number_character: str=None, zip_code: int=None, locality: str=None, locality_part: str=None, district_number: int=None, district: str=None, ruian_id: int=None, coordinates: Coordinates=None):  # noqa: E501
         """Address - a model defined in Swagger
 
         :param street: The street of this Address.  # noqa: E501

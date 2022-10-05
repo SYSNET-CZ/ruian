@@ -14,8 +14,7 @@ class Wgs(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, lat: str = None, lon: str = None):  # noqa: E501
+    def __init__(self, lat: str=None, lon: str=None):  # noqa: E501
         """Wgs - a model defined in Swagger
 
         :param lat: The lat of this Wgs.  # noqa: E501

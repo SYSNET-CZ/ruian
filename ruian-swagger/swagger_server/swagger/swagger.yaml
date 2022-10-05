@@ -9,6 +9,8 @@ info:
     url: https://www.gnu.org/licenses/agpl-3.0.html
   version: 1.0.2
 servers:
+- url: https://virtserver.swaggerhub.com/SYSNET/RUIAN/1.0.2
+  description: SwaggerHub API Auto Mocking
 - url: https://virtserver.swaggerhub.com/sysnetcz/RUIAN/1.0.2
 tags:
 - name: admins
@@ -23,8 +25,9 @@ paths:
       tags:
       - public
       summary: find land parcel by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ plot of land\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the plot of land
       operationId: parcela_api
       parameters:
       - name: x
@@ -73,8 +76,9 @@ paths:
       tags:
       - public
       summary: find plot (of land) by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ plot of land\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the plot of land
       operationId: parcela_post_api
       requestBody:
         description: JTSK coordinates
@@ -109,8 +113,9 @@ paths:
       tags:
       - public
       summary: find land parcel by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ plot of land\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the plot of land
       operationId: parcela_wgs_api
       parameters:
       - name: lat
@@ -157,8 +162,9 @@ paths:
       tags:
       - public
       summary: find plot (of land) by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ plot of land\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the plot of land
       operationId: parcela_wgs_post_api
       requestBody:
         description: WGS coordinates
@@ -193,8 +199,9 @@ paths:
       tags:
       - public
       summary: find basic settlement unit by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basic settlement unit\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basic settlement unit
       operationId: zsj_api
       parameters:
       - name: x
@@ -243,8 +250,9 @@ paths:
       tags:
       - public
       summary: find basic settlement unit by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basic settlement unit\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basic settlement unit
       operationId: zsj_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointJtskReq'
@@ -275,8 +283,9 @@ paths:
       tags:
       - public
       summary: find basic settlement unit by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basic settlement unit\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basic settlement unit
       operationId: zsj_wgs_api
       parameters:
       - name: lat
@@ -323,8 +332,9 @@ paths:
       tags:
       - public
       summary: find basic settlement unit by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basic settlement unit\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basic settlement unit
       operationId: zsj_wgs_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointWgsReq'
@@ -355,8 +365,9 @@ paths:
       tags:
       - public
       summary: find cadastral territory by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ cadastral territory\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the cadastral territory
       operationId: ku_api
       parameters:
       - name: x
@@ -405,8 +416,9 @@ paths:
       tags:
       - public
       summary: find cadastral territory by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ cadastral territory\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the cadastral territory
       operationId: ku_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointJtskReq'
@@ -437,8 +449,9 @@ paths:
       tags:
       - public
       summary: find cadastral territory by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basic settlement unit\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basic settlement unit
       operationId: ku_wgs_api
       parameters:
       - name: lat
@@ -485,8 +498,9 @@ paths:
       tags:
       - public
       summary: find cadastral territory by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basic settlement unit\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basic settlement unit
       operationId: ku_wgs_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointWgsReq'
@@ -517,8 +531,9 @@ paths:
       tags:
       - public
       summary: find basin info by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basin info\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basin info
       operationId: povodi_api
       parameters:
       - name: x
@@ -567,8 +582,9 @@ paths:
       tags:
       - public
       summary: find basin info by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basin info\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basin info
       operationId: povodi_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointJtskReq'
@@ -599,8 +615,9 @@ paths:
       tags:
       - public
       summary: find basin info by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basin info\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basin info
       operationId: povodi_wgs_api
       parameters:
       - name: lat
@@ -647,8 +664,9 @@ paths:
       tags:
       - public
       summary: find basin info by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ basin info\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the basin info
       operationId: povodi_wgs_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointWgsReq'
@@ -679,8 +697,9 @@ paths:
       tags:
       - public
       summary: find map sheets layout by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ map sheets layout\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the map sheets layout
       operationId: mapy50_api
       parameters:
       - name: x
@@ -729,8 +748,9 @@ paths:
       tags:
       - public
       summary: find map sheets layout by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ map sheets layout\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the map sheets layout
       operationId: mapy50_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointJtskReq'
@@ -761,8 +781,9 @@ paths:
       tags:
       - public
       summary: find map sheets layout by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ map sheets layout\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the map sheets layout
       operationId: mapy50_wgs_api
       parameters:
       - name: lat
@@ -809,8 +830,9 @@ paths:
       tags:
       - public
       summary: find map sheets layout by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ map sheets layout\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the map sheets layout
       operationId: mapy50_wgs_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointWgsReq'
@@ -841,8 +863,9 @@ paths:
       tags:
       - public
       summary: find nearby adresses by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ nearby adresses\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the nearby adresses
       operationId: nearby_address_api
       parameters:
       - name: x
@@ -894,8 +917,9 @@ paths:
       tags:
       - public
       summary: find nearby adresses by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ nearby adresses\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the nearby adresses
       operationId: nearby_address_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointJtskReq'
@@ -929,8 +953,9 @@ paths:
       tags:
       - public
       summary: find nearby adresses by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ nearby adresses\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the nearby adresses
       operationId: nearby_address_wgs_api
       parameters:
       - name: lat
@@ -980,8 +1005,9 @@ paths:
       tags:
       - public
       summary: find nearby adresses by coordinates
-      description: "By passing in the appropriate options, you can search for\nthe\
-        \ nearby adresses\n"
+      description: |
+        By passing in the appropriate options, you can search for
+        the nearby adresses
       operationId: nearby_address_wgs_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointWgsReq'
@@ -1015,8 +1041,8 @@ paths:
       tags:
       - public
       summary: converts one point from WGS-84 to JTSK
-      description: "By passing in the appropriate options, you can obtain converted\
-        \ value\n"
+      description: |
+        By passing in the appropriate options, you can obtain converted value
       operationId: convert_point_jtsk_api
       parameters:
       - name: lat
@@ -1063,8 +1089,8 @@ paths:
       tags:
       - public
       summary: converts one point from WGS-84 to JTSK
-      description: "By passing in the appropriate options, you can obtain converted\
-        \ value\n"
+      description: |
+        By passing in the appropriate options, you can obtain converted value
       operationId: convert_point_jtsk_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointWgsReq'
@@ -1095,8 +1121,8 @@ paths:
       tags:
       - public
       summary: converts one point from JTSK to WGS-84
-      description: "By passing in the appropriate options, you can obtain converted\
-        \ value\n"
+      description: |
+        By passing in the appropriate options, you can obtain converted value
       operationId: convert_point_wgs_api
       parameters:
       - name: x
@@ -1145,8 +1171,8 @@ paths:
       tags:
       - public
       summary: converts one point from JTSK to WGS-84
-      description: "By passing in the appropriate options, you can obtain converted\
-        \ value\n"
+      description: |
+        By passing in the appropriate options, you can obtain converted value
       operationId: convert_point_wgs_post_api
       requestBody:
         $ref: '#/components/requestBodies/PointJtskReq'
@@ -1177,8 +1203,8 @@ paths:
       tags:
       - public
       summary: converts polygon from WGS84 to JTSK
-      description: "By passing in the appropriate options, you can obtain converted\
-        \ value\n"
+      description: |
+        By passing in the appropriate options, you can obtain converted value
       operationId: convert_polygon_jtsk_api
       requestBody:
         $ref: '#/components/requestBodies/PolygonWgsReq'
@@ -1209,8 +1235,8 @@ paths:
       tags:
       - public
       summary: converts polygon from JTSK to WGS84
-      description: "By passing in the appropriate options, you can obtain converted\
-        \ value\n"
+      description: |
+        By passing in the appropriate options, you can obtain converted value
       operationId: convert_polygon_wgs_api
       requestBody:
         $ref: '#/components/requestBodies/PolygonJtskReq'
@@ -1241,7 +1267,8 @@ paths:
       tags:
       - public
       summary: search adresses by query
-      description: "By passing in the appropriate options, you can obtain search results\n"
+      description: |
+        By passing in the appropriate options, you can obtain search results
       operationId: search_address_ft_api
       parameters:
       - name: query
@@ -1282,7 +1309,8 @@ paths:
       tags:
       - public
       summary: search adresses by structured query
-      description: "By passing in the appropriate options, you can obtain search results\n"
+      description: |
+        By passing in the appropriate options, you can obtain search results
       operationId: search_address_api
       requestBody:
         $ref: '#/components/requestBodies/Address'
@@ -1316,7 +1344,8 @@ paths:
       tags:
       - public
       summary: seach address by identifier
-      description: "By passing in the appropriate options, you can obtain addres point\n"
+      description: |
+        By passing in the appropriate options, you can obtain addres point
       operationId: search_address_id_api
       parameters:
       - name: id
@@ -1355,8 +1384,8 @@ paths:
       tags:
       - public
       summary: compile adresses by query
-      description: "By passing in the appropriate options, you can obtain formatted\
-        \ addreses\n"
+      description: |
+        By passing in the appropriate options, you can obtain formatted addreses
       operationId: compile_address_ft_api
       parameters:
       - name: query
@@ -1397,8 +1426,8 @@ paths:
       tags:
       - public
       summary: compile adresses by query
-      description: "By passing in the appropriate options, you can obtain formatted\
-        \ addreses\n"
+      description: |
+        By passing in the appropriate options, you can obtain formatted addreses
       operationId: compile_address_api
       requestBody:
         $ref: '#/components/requestBodies/Address'
@@ -1432,8 +1461,8 @@ paths:
       tags:
       - public
       summary: compile adresses by identifier
-      description: "By passing in the appropriate options, you can obtain formatted\
-        \ addres\n"
+      description: |
+        By passing in the appropriate options, you can obtain formatted addres
       operationId: compile_address_id_api
       parameters:
       - name: id
@@ -1473,8 +1502,8 @@ paths:
       tags:
       - public
       summary: validate adresses by identifier
-      description: "By passing in the appropriate options, you can validate address\
-        \ point\n"
+      description: |
+        By passing in the appropriate options, you can validate address point
       operationId: validate_address_id_api
       parameters:
       - name: id
@@ -1514,7 +1543,8 @@ paths:
       tags:
       - public
       summary: get addres point full info by identifier
-      description: "By passing in the appropriate options, you can obtain addres point\n"
+      description: |
+        By passing in the appropriate options, you can obtain addres point
       operationId: get_address_id_api
       parameters:
       - name: id
@@ -1553,8 +1583,8 @@ paths:
       tags:
       - public
       summary: get cadastral territory full info by identifier
-      description: "By passing in the appropriate options, you can obtain cadastral\
-        \ territory\n"
+      description: |
+        By passing in the appropriate options, you can obtain cadastral territory
       operationId: get_ku_id_api
       parameters:
       - name: id
@@ -1593,8 +1623,8 @@ paths:
       tags:
       - public
       summary: get basic settlement unit full info by identifier
-      description: "By passing in the appropriate options, you can obtain basic settlement\
-        \ unit\n"
+      description: |
+        By passing in the appropriate options, you can obtain basic settlement unit
       operationId: get_zsj_id_api
       parameters:
       - name: id
@@ -1633,7 +1663,8 @@ paths:
       tags:
       - developers
       summary: get service info
-      description: "Returns service info - status, technology versions, etc.\n"
+      description: |
+        Returns service info - status, technology versions, etc.
       operationId: info_api
       responses:
         "200":

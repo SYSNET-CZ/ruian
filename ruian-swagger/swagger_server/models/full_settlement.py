@@ -18,9 +18,7 @@ class FullSettlement(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, settlement: Settlement = None, administrative_division: AdministrativeDivision = None,
-                 basin: Povodi = None, map50_sheet: MapovyList50 = None):  # noqa: E501
+    def __init__(self, settlement: Settlement=None, administrative_division: AdministrativeDivision=None, basin: Povodi=None, map50_sheet: MapovyList50=None):  # noqa: E501
         """FullSettlement - a model defined in Swagger
 
         :param settlement: The settlement of this FullSettlement.  # noqa: E501

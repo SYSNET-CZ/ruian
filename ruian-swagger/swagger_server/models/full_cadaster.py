@@ -18,10 +18,7 @@ class FullCadaster(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, cadastral_teritory: CadastralTerritory = None,
-                 administrative_division: AdministrativeDivision = None, basin: Povodi = None,
-                 map50_sheet: MapovyList50 = None):  # noqa: E501
+    def __init__(self, cadastral_teritory: CadastralTerritory=None, administrative_division: AdministrativeDivision=None, basin: Povodi=None, map50_sheet: MapovyList50=None):  # noqa: E501
         """FullCadaster - a model defined in Swagger
 
         :param cadastral_teritory: The cadastral_teritory of this FullCadaster.  # noqa: E501

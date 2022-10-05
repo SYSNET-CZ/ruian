@@ -4,7 +4,7 @@ import sys
 from setuptools import setup, find_packages
 
 NAME = "swagger_server"
-VERSION = "1.0.2"
+VERSION = "1.0.0"
 # To install the library, run the following
 #
 # python setup.py install
@@ -12,7 +12,10 @@ VERSION = "1.0.2"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = ["connexion"]
+REQUIRES = [
+    "connexion",
+    "swagger-ui-bundle>=0.0.2"
+]
 
 setup(
     name=NAME,

@@ -8,7 +8,6 @@
 # License:      CC BY-SA 4.0
 # -------------------------------------------------------------------------------
 # from collections import defaultdict
-import logging
 from collections import defaultdict
 from typing import List, Any
 from urllib.parse import unquote
@@ -16,6 +15,7 @@ from urllib.parse import unquote
 import psycopg2
 from lat_lon_parser import parser
 
+from settings import who_am_i, LOG
 from swagger_server.models import FullAddress, FullCadaster, FullSettlement
 from swagger_server.service.common import compile_address_as_json, compile_address_as_text, compile_address_as_xml, \
     compile_address_to_one_row, number_to_string, analyse_row, right_address, TEXT_FORMAT_TEXT, TEXT_FORMAT_JSON, \
@@ -36,8 +36,6 @@ from swagger_server.service.models import AddressInternal, PovodiInternal, Coord
 from swagger_server.service.procedure import is_int, number_check, get_polygon_string, load_polygon
 
 __author__ = 'SYSNET'
-
-from swagger_server.util import who_am_i
 
 exact_match_needed = False
 
@@ -343,7 +341,7 @@ def _get_administrative_division_ku(y, x):
     geom = geom_point(column_name="geom_polygon", x=x, y=y)
     sql = "SELECT * FROM {0} WHERE {1}({2});".format(ADMINISTRATIVE_DIVISION_KU_TABLE_NAME, 'ST_Contains', geom)
     print('SQL:', sql)
-    logging.info('{0}: {1} - {2}'.format(__name__, 'SQL:', sql))
+    LOG.logger.info('{0}: {1} - {2}'.format(__name__, 'SQL:', sql))
     row = get_row(DATABASE_NAME_RUIAN, sql)
     if row is None:
         return None
@@ -415,11 +413,11 @@ def _find_administrative_division(identifier, ad_type='ku'):
     elif ad_type == 'zsj':
         table = ADMINISTRATIVE_DIVISION_ZSJ_TABLE_NAME
     else:
-        logging.error('{0}: invalid administrative division type {1}'.format(__name__, type))
+        LOG.logger.error('{0}: invalid administrative division type {1}'.format(__name__, type))
         return None
     sql = "SELECT {0} FROM {1}  WHERE {2} = {3}".format('*', table, 'gid', str(identifier))
     print('SQL:', sql)
-    logging.info('{0}: {1} - {2}'.format(__name__, 'SQL:', sql))
+    LOG.logger.info('{0}: {1} - {2}'.format(__name__, 'SQL:', sql))
     row = get_row(DATABASE_NAME_RUIAN, sql)
     if row is None:
         return None
@@ -1437,19 +1435,19 @@ def _get_full_address(identifier: int):
         return None
     adr = _find_address(identifier=identifier)
     if adr is None:
-        logging.info('{0}: addresspoint {1} not found.'.format(__name__, identifier))
+        LOG.logger.info('{0}: addresspoint {1} not found.'.format(__name__, identifier))
         return None
     zsj = _get_administrative_division_zsj(y=adr.jtsk_y, x=adr.jtsk_x)
     if zsj is None:
-        logging.error('{0}: settlement not found for addresspoint {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: settlement not found for addresspoint {1}.'.format(__name__, identifier))
         return None
     roz = _get_rozvodnice(y=adr.jtsk_y, x=adr.jtsk_x)
     if roz is None:
-        logging.error('{0}: basin not found for addresspoint {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: basin not found for addresspoint {1}.'.format(__name__, identifier))
         return None
     mapsheet = _get_map_sheet_50(y=adr.jtsk_y, x=adr.jtsk_x)
     if mapsheet is None:
-        logging.error('{0}: map sheet not found for addresspoint {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: map sheet not found for addresspoint {1}.'.format(__name__, identifier))
         return None
     out = FullAddress()
     out.address_point = adr.to_swagger
@@ -1465,15 +1463,15 @@ def _get_full_cadaster(identifier: int):
         return None
     ku = _find_administrative_division_ku(identifier=identifier)
     if ku is None:
-        logging.info('{0}: cadastral teritory {1} not found.'.format(__name__, identifier))
+        LOG.logger.info('{0}: cadastral teritory {1} not found.'.format(__name__, identifier))
         return None
     roz = _get_rozvodnice(y=ku.jtsk_y, x=ku.jtsk_x)
     if roz is None:
-        logging.error('{0}: basin not found for cadastral teritory {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: basin not found for cadastral teritory {1}.'.format(__name__, identifier))
         return None
     mapsheet = _get_map_sheet_50(y=ku.jtsk_y, x=ku.jtsk_x)
     if mapsheet is None:
-        logging.error('{0}: map sheet not found for cadastral teritory {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: map sheet not found for cadastral teritory {1}.'.format(__name__, identifier))
         return None
     out = FullCadaster()
     out.administrative_division = ku.administrative_division
@@ -1489,15 +1487,15 @@ def _get_full_settlement(identifier: int):
         return None
     zsj = _find_administrative_division_zsj(identifier=identifier)
     if zsj is None:
-        logging.info('{0}: settlement {1} not found.'.format(__name__, identifier))
+        LOG.logger.info('{0}: settlement {1} not found.'.format(__name__, identifier))
         return None
     roz = _get_rozvodnice(y=zsj.jtsk_y, x=zsj.jtsk_x)
     if roz is None:
-        logging.error('{0}: basin not found for settlement {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: basin not found for settlement {1}.'.format(__name__, identifier))
         return None
     mapsheet = _get_map_sheet_50(y=zsj.jtsk_y, x=zsj.jtsk_x)
     if mapsheet is None:
-        logging.error('{0}: map sheet not found for settlement {1}.'.format(__name__, identifier))
+        LOG.logger.error('{0}: map sheet not found for settlement {1}.'.format(__name__, identifier))
         return None
     out = FullSettlement()
     out.basin = roz.to_swagger
