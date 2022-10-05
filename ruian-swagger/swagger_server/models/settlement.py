@@ -14,12 +14,11 @@ class Settlement(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, id_value: int = None, nazev: str = None):  # noqa: E501
+    def __init__(self, id: int=None, nazev: str=None):  # noqa: E501
         """Settlement - a model defined in Swagger
 
-        :param id_value: The id of this Settlement.  # noqa: E501
-        :type id_value: int
+        :param id: The id of this Settlement.  # noqa: E501
+        :type id: int
         :param nazev: The nazev of this Settlement.  # noqa: E501
         :type nazev: str
         """
@@ -32,7 +31,7 @@ class Settlement(Model):
             'id': 'id',
             'nazev': 'nazev'
         }
-        self._id = id_value
+        self._id = id
         self._nazev = nazev
 
     @classmethod
@@ -57,15 +56,15 @@ class Settlement(Model):
         return self._id
 
     @id.setter
-    def id(self, id_value: int):
+    def id(self, id: int):
         """Sets the id of this Settlement.
 
 
-        :param id_value: The id of this Settlement.
-        :type id_value: int
+        :param id: The id of this Settlement.
+        :type id: int
         """
 
-        self._id = id_value
+        self._id = id
 
     @property
     def nazev(self) -> str:

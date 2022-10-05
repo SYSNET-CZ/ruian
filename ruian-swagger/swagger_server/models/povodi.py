@@ -14,14 +14,11 @@ class Povodi(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, id_value: int = None, id_1: int = None, id_2: int = None, id_3: int = None, chp: str = None,
-                 chp_d: str = None, chp_u: str = None, naz_pov_1: str = None, naz_pov_2: str = None,
-                 naz_pov_3: str = None, naz_tok: str = None, naz_tok_2: str = None):  # noqa: E501
+    def __init__(self, id: int=None, id_1: int=None, id_2: int=None, id_3: int=None, chp: str=None, chp_d: str=None, chp_u: str=None, naz_pov_1: str=None, naz_pov_2: str=None, naz_pov_3: str=None, naz_tok: str=None, naz_tok_2: str=None):  # noqa: E501
         """Povodi - a model defined in Swagger
 
-        :param id_value: The id of this Povodi.  # noqa: E501
-        :type id_value: int
+        :param id: The id of this Povodi.  # noqa: E501
+        :type id: int
         :param id_1: The id_1 of this Povodi.  # noqa: E501
         :type id_1: int
         :param id_2: The id_2 of this Povodi.  # noqa: E501
@@ -74,7 +71,7 @@ class Povodi(Model):
             'naz_tok': 'naz_tok',
             'naz_tok_2': 'naz_tok_2'
         }
-        self._id = id_value
+        self._id = id
         self._id_1 = id_1
         self._id_2 = id_2
         self._id_3 = id_3
@@ -109,15 +106,15 @@ class Povodi(Model):
         return self._id
 
     @id.setter
-    def id(self, id_value: int):
+    def id(self, id: int):
         """Sets the id of this Povodi.
 
 
-        :param id_value: The id of this Povodi.
-        :type id_value: int
+        :param id: The id of this Povodi.
+        :type id: int
         """
 
-        self._id = id_value
+        self._id = id
 
     @property
     def id_1(self) -> int:

@@ -6,6 +6,7 @@ import connexion
 from environs import Env
 from flask_cors import CORS
 
+from settings import set_ext_logger, LOG
 from swagger_server import encoder
 
 SERVICE_ENVIRONMENT = os.getenv("SERVICE_ENVIRONMENT", "development")
@@ -31,7 +32,10 @@ dictConfig({
 
 app = connexion.App(__name__, specification_dir='swagger_server/swagger/')
 app.app.json_encoder = encoder.JSONEncoder
-app.app.logger.info("The logger configured!")
+# app.app.logger = LOG.logger
+app.app.logger.info("GUNICORN logger configured!")
+set_ext_logger(app.app.logger)
+
 app.add_api('swagger.yaml', arguments={'title': 'SYSNET RUIAN services API'}, pythonic_params=True)
 CORS(app.app)
 env = Env()

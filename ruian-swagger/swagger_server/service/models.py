@@ -42,6 +42,45 @@ class CoordinatesGpsInternal(dict, object):
         self.lon = lon
 
 
+def data_to_integer(data):
+    try:
+        if data is None:
+            data = -1
+        if not isinstance(data, int):
+            out = int(data)
+        else:
+            out = data
+    except ValueError:
+        out = -1
+    return out
+
+
+def data_to_float(data):
+    try:
+        if data is None:
+            data = float(0)
+        if not isinstance(data, float):
+            out = float(data)
+        else:
+            out = data
+    except ValueError:
+        out = float(0)
+    return out
+
+
+def pretty_number(data):
+    out = ''
+    if data is not None:
+        out = str(data)
+        if isinstance(int, data):
+            if data < 0:
+                out = ''
+        elif isinstance(float, data):
+            if data == float(0):
+                out = ''
+    return out
+
+
 class AddressInternal(dict, object):
     def __init__(self, street, house_number, record_number, orientation_number, orientation_number_character,
                  zip_code, locality, locality_part, district_number, district, ruian_id, jtsk_x, jtsk_y):
@@ -52,18 +91,18 @@ class AddressInternal(dict, object):
             district=district, ruian_id=ruian_id, jtsk_x=jtsk_x, jtsk_y=jtsk_y
         )
         self.street = street
-        self.house_number = house_number
-        self.record_number = record_number
-        self.orientation_number = orientation_number
+        self.house_number = data_to_integer(house_number)
+        self.record_number = data_to_integer(record_number)
+        self.orientation_number = data_to_integer(orientation_number)
         self.orientation_number_character = orientation_number_character
-        self.zip_code = zip_code
+        self.zip_code = data_to_integer(zip_code)
         self.locality = locality
         self.locality_part = locality_part
-        self.district_number = district_number
+        self.district_number = data_to_integer(district_number)
         self.district = district
-        self.ruian_id = ruian_id
-        self.jtsk_x = jtsk_x
-        self.jtsk_y = jtsk_y
+        self.ruian_id = data_to_integer(ruian_id)
+        self.jtsk_x = data_to_float(jtsk_x)
+        self.jtsk_y = data_to_float(jtsk_y)
 
     @property
     def to_pretty(self):
@@ -118,18 +157,18 @@ class PrettyAddressInternal(dict, object):
              locality_part, district_number, district, ruian_id, jtsk_x, jtsk_y)
         )
         self.street = street
-        self.house_number = house_number
-        self.record_number = record_number
-        self.orientation_number = orientation_number
+        self.house_number = pretty_number(house_number)
+        self.record_number = pretty_number(record_number)
+        self.orientation_number = pretty_number(orientation_number)
         self.orientation_number_character = orientation_number_character
-        self.zip_code = zip_code
+        self.zip_code = pretty_number(zip_code)
         self.locality = locality
         self.locality_part = locality_part
-        self.district_number = district_number
+        self.district_number = pretty_number(district_number)
         self.district = district
-        self.ruian_id = ruian_id
-        self.jtsk_x = jtsk_x
-        self.jtsk_y = jtsk_y
+        self.ruian_id = pretty_number(ruian_id)
+        self.jtsk_x = pretty_number(jtsk_x)
+        self.jtsk_y = pretty_number(jtsk_y)
 
         self.zip_code = formatzip_code(self.zip_code)
         self.house_number = empty_string_if_no_number(self.house_number)
@@ -207,7 +246,7 @@ class MapovyList50Internal:
     @property
     def to_swagger(self):
         out = MapovyList50(
-            id_value=self.id, nazev=self.nazev
+            id=self.id, nazev=self.nazev
         )
         return out
 
@@ -264,7 +303,7 @@ class KatastralniUzemiInternal:
     @property
     def to_swagger(self):
         out = KatastralniUzemi(
-            id_value=self.ku_kod,
+            id=self.ku_kod,
             nazev=self.ku_nazev,
             administrative_division=self.administrative_division
         )
@@ -273,7 +312,7 @@ class KatastralniUzemiInternal:
     @property
     def cadastral_territory(self):
         ct = CadastralTerritory(
-            id_value=self.ku_kod,
+            id=self.ku_kod,
             nazev=self.ku_nazev
         )
         return ct
@@ -318,7 +357,7 @@ class ZsjInternal(KatastralniUzemiInternal):
 
     @property
     def to_swagger(self):
-        sett = Settlement(id_value=self.zsj_id, nazev=self.zsj_nazev)
+        sett = Settlement(id=self.zsj_id, nazev=self.zsj_nazev)
         out = Zsj(
             settlement=sett,
             administrative_division=self.administrative_division
@@ -327,7 +366,7 @@ class ZsjInternal(KatastralniUzemiInternal):
 
     @property
     def settlement(self):
-        sett = Settlement(id_value=self.zsj_id, nazev=self.zsj_nazev)
+        sett = Settlement(id=self.zsj_id, nazev=self.zsj_nazev)
         return sett
 
 
@@ -369,7 +408,7 @@ class ParcelaInternal(KatastralniUzemiInternal):
     @property
     def to_swagger(self):
         out = Parcela(
-            id_value=self.parcela_id,
+            id=self.parcela_id,
             kmenovecislo=self.kmenovecislo, pododdelenicisla=self.pododdelenicisla, vymeraparcely=self.vymeraparcely,
             administrative_division=self.administrative_division)
         return out
@@ -414,7 +453,7 @@ class PovodiInternal:
     @property
     def to_swagger(self):
         out = Povodi(
-            id_value=self.id, naz_pov_1=self.naz_pov_1, naz_pov_2=self.naz_pov_2, naz_pov_3=self.naz_pov_3,
+            id=self.id, naz_pov_1=self.naz_pov_1, naz_pov_2=self.naz_pov_2, naz_pov_3=self.naz_pov_3,
             naz_tok_2=self.naz_tok_2, naz_tok=self.naz_tok, chp=self.chp, chp_d=self.chp_d, chp_u=self.chp_u,
             id_1=self.id_1, id_2=self.id_2, id_3=self.id_3
         )
@@ -561,7 +600,7 @@ def none_to_string(item):
 
 def formatzip_code(code):
     if code is None:
-        return ""
+        return ''
     else:
         code = str(code)
         code = code.replace(" ", "")

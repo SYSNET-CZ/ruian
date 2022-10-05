@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
 from datetime import date, datetime  # noqa: F401
+
 from typing import List, Dict  # noqa: F401
 
-from swagger_server import util
 from swagger_server.models.base_model_ import Model
 from swagger_server.models.point_wgs import PointWgs  # noqa: F401,E501
+from swagger_server import util
 
 
 class PolygonWgs(Model):
@@ -15,8 +15,7 @@ class PolygonWgs(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, polygon: List[PointWgs] = None):  # noqa: E501
+    def __init__(self, polygon: List[PointWgs]=None):  # noqa: E501
         """PolygonWgs - a model defined in Swagger
 
         :param polygon: The polygon of this PolygonWgs.  # noqa: E501

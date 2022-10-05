@@ -14,8 +14,7 @@ class Jtsk(Model):
 
     Do not edit the class manually.
     """
-
-    def __init__(self, x: float = None, y: float = None):  # noqa: E501
+    def __init__(self, x: float=None, y: float=None):  # noqa: E501
         """Jtsk - a model defined in Swagger
 
         :param x: The x of this Jtsk.  # noqa: E501
