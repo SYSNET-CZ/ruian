@@ -16,3 +16,4 @@ dicttoxml~=1.7.4
 lat-lon-parser==1.2.0
 gunicorn==20.1.0
 Flask-Cors==3.0.10
+requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
