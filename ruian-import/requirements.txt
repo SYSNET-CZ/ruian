@@ -13,4 +13,4 @@ web.py==0.51
 tabulate==0.8.7
 psycopg2~=2.8.6
 setuptools~=54.2.0
-sqlparse~=0.4.1
+sqlparse~=0.5.4
